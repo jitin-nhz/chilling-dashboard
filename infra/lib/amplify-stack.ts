@@ -54,7 +54,6 @@ export class ChillingDashboardAmplifyStack extends cdk.Stack {
         "      - .next/cache/**/*",
       ].join("\n"),
       environmentVariables: [
-        { name: "AMPLIFY_MONOREPO_APP_ROOT", value: "." },
         { name: "NODE_VERSION", value: "20" },
       ],
       customRules: [
