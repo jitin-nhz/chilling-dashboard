@@ -2,15 +2,14 @@ import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import * as amplify from "aws-cdk-lib/aws-amplify";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
-import * as iam from "aws-cdk-lib/aws-iam";
 
 export interface ChillingDashboardAmplifyStackProps extends cdk.StackProps {
   githubOwner: string;
   githubRepo: string;
-  githubTokenSecretArn: string; // ARN of Secrets Manager secret holding GitHub PAT
-  domainName: string;           // e.g. "9hz.dev"
-  subDomain: string;            // e.g. "ott"
-  branch?: string;              // defaults to "main"
+  githubTokenSecretName: string; // Secrets Manager secret name holding GitHub PAT
+  domainName: string;            // e.g. "9hz.dev"
+  subDomain: string;             // e.g. "ott"
+  branch?: string;               // defaults to "main"
 }
 
 export class ChillingDashboardAmplifyStack extends cdk.Stack {
@@ -23,10 +22,10 @@ export class ChillingDashboardAmplifyStack extends cdk.Stack {
     const branch = props.branch ?? "main";
 
     // ── Retrieve GitHub token from Secrets Manager ───────────────────────────
-    const githubToken = secretsmanager.Secret.fromSecretCompleteArn(
+    const githubToken = secretsmanager.Secret.fromSecretNameV2(
       this,
       "GithubToken",
-      props.githubTokenSecretArn
+      props.githubTokenSecretName
     );
 
     // ── Amplify App ─────────────────────────────────────────────────────────

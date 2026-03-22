@@ -16,9 +16,7 @@ new ChillingDashboardAmplifyStack(app, "ChillingDashboardAmplify", {
   githubOwner: "jitin-nhz",
   githubRepo: "chilling-dashboard",
 
-  // Store GitHub PAT in Secrets Manager — see README for setup
-  // Run: aws secretsmanager create-secret --name chilling-dashboard/github-token --secret-string "ghp_xxxx"
-  githubTokenSecretArn: `arn:aws:secretsmanager:${process.env.CDK_DEFAULT_REGION ?? "us-east-1"}:${process.env.CDK_DEFAULT_ACCOUNT}:secret:chilling-dashboard/github-token`,
+  githubTokenSecretName: "chilling-dashboard/github-token",
 
   // Custom domain
   domainName: "9hz.dev",
