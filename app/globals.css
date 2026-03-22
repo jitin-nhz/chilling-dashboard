@@ -18,8 +18,8 @@
 }
 
 body {
-  background-color: #0F0F1A;
-  color: #E8E8F0;
+  background-color: #F4F6F8;
+  color: #1A1A2E;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
@@ -29,7 +29,7 @@ body {
   height: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: #1A1A2E;
+  background: #E8ECF0;
 }
 ::-webkit-scrollbar-thumb {
   background: #0A7B8C;

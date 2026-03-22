@@ -12,11 +12,15 @@ import {
 } from "@/lib/data";
 import { Eye, Users, Clock, TrendingUp } from "lucide-react";
 
+const TT_STYLE = { background: "#FFFFFF", border: "1px solid #E0E4EA", borderRadius: 8 };
+const TT_LABEL = { color: "#64748B" };
+const TT_ITEM = { color: "#1A1A2E" };
+
 const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: { color: string; name: string; value: number }[]; label?: string }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="rounded-lg p-3 text-xs" style={{ background: "#1A1A2E", border: "1px solid #2A2A45" }}>
-        <p className="mb-1 font-medium" style={{ color: "#E8E8F0" }}>{label}</p>
+      <div className="rounded-lg p-3 text-xs shadow-md" style={{ background: "#FFFFFF", border: "1px solid #E0E4EA" }}>
+        <p className="mb-1 font-medium" style={{ color: "#64748B" }}>{label}</p>
         {payload.map((entry, i) => (
           <p key={i} style={{ color: entry.color }}>
             {entry.name}: {entry.value.toLocaleString("en-IN")}
@@ -44,8 +48,8 @@ export default function ViewershipOverview() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-white">Viewership Overview</h1>
-        <p className="text-sm mt-1" style={{ color: "#8888A8" }}>
+        <h1 className="text-xl font-bold" style={{ color: "#1A1A2E" }}>Viewership Overview</h1>
+        <p className="text-sm mt-1" style={{ color: "#64748B" }}>
           Real-time platform activity · Last updated: {new Date().toLocaleTimeString("en-IN")}
         </p>
       </div>
@@ -66,17 +70,17 @@ export default function ViewershipOverview() {
             <AreaChart data={dauMauTrend} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="dauGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#0A7B8C" stopOpacity={0.3} />
+                  <stop offset="5%" stopColor="#0A7B8C" stopOpacity={0.2} />
                   <stop offset="95%" stopColor="#0A7B8C" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="mauGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#F0A500" stopOpacity={0.2} />
+                  <stop offset="5%" stopColor="#F0A500" stopOpacity={0.15} />
                   <stop offset="95%" stopColor="#F0A500" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#2A2A45" />
-              <XAxis dataKey="date" tick={{ fill: "#555580", fontSize: 10 }} tickLine={false} interval={4} />
-              <YAxis tick={{ fill: "#555580", fontSize: 10 }} tickLine={false} axisLine={false}
+              <CartesianGrid strokeDasharray="3 3" stroke="#E8ECF0" />
+              <XAxis dataKey="date" tick={{ fill: "#94A3B8", fontSize: 10 }} tickLine={false} interval={4} />
+              <YAxis tick={{ fill: "#94A3B8", fontSize: 10 }} tickLine={false} axisLine={false}
                 tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
               <Tooltip content={<CustomTooltip />} />
               <Area type="monotone" dataKey="MAU" stroke="#F0A500" strokeWidth={1.5} fill="url(#mauGrad)" dot={false} name="MAU" />
@@ -93,9 +97,7 @@ export default function ViewershipOverview() {
                 <Pie data={deviceData} dataKey="value" cx="50%" cy="50%" innerRadius={35} outerRadius={58} paddingAngle={2}>
                   {deviceData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                 </Pie>
-                <Tooltip formatter={(v) => `${v}%`}
-                  contentStyle={{ background: "#1A1A2E", border: "1px solid #2A2A45", borderRadius: 8 }}
-                  itemStyle={{ color: "#E8E8F0" }} />
+                <Tooltip formatter={(v) => `${v}%`} contentStyle={TT_STYLE} itemStyle={TT_ITEM} labelStyle={TT_LABEL} />
               </PieChart>
             </ResponsiveContainer>
             <div className="flex-1 space-y-2">
@@ -103,9 +105,9 @@ export default function ViewershipOverview() {
                 <div key={d.name} className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
                     <div className="w-2 h-2 rounded-full" style={{ background: d.color }} />
-                    <span className="text-[11px]" style={{ color: "#8888A8" }}>{d.name}</span>
+                    <span className="text-[11px]" style={{ color: "#64748B" }}>{d.name}</span>
                   </div>
-                  <span className="text-[11px] font-mono font-semibold text-white">{d.value}%</span>
+                  <span className="text-[11px] font-mono font-semibold" style={{ color: "#1A1A2E" }}>{d.value}%</span>
                 </div>
               ))}
             </div>
@@ -120,14 +122,14 @@ export default function ViewershipOverview() {
           subtitle="Content consumption intensity by day × hour (IST)"
           action={
             <span className="text-[10px] px-2 py-1 rounded-full"
-              style={{ background: "rgba(240, 165, 0, 0.1)", color: "#F0A500", border: "1px solid rgba(240,165,0,0.2)" }}>
+              style={{ background: "rgba(240, 165, 0, 0.1)", color: "#D97706", border: "1px solid rgba(240,165,0,0.3)" }}>
               Peak: 9–11 PM IST
             </span>
           }
         />
         <ViewershipHeatmap />
-        <div className="mt-3 p-3 rounded-lg text-xs" style={{ background: "rgba(10, 123, 140, 0.08)", color: "#0A7B8C", border: "1px solid rgba(10,123,140,0.15)" }}>
-          💡 <span className="text-white">These 9–11pm spikes represent your highest-CPM ad window — the engine targets this automatically.</span>
+        <div className="mt-3 p-3 rounded-lg text-xs" style={{ background: "rgba(10, 123, 140, 0.06)", color: "#0A7B8C", border: "1px solid rgba(10,123,140,0.15)" }}>
+          💡 <span style={{ color: "#1A1A2E" }}>These 9–11pm spikes represent your highest-CPM ad window — the engine targets this automatically.</span>
         </div>
       </Card>
 
@@ -141,8 +143,8 @@ export default function ViewershipOverview() {
               const pct = (g.value / maxVal) * 100;
               return (
                 <div key={g.name} className="flex items-center gap-2">
-                  <div className="text-[11px] w-20 text-right" style={{ color: "#8888A8" }}>{g.name}</div>
-                  <div className="flex-1 h-5 rounded-sm overflow-hidden" style={{ background: "#1E1E35" }}>
+                  <div className="text-[11px] w-20 text-right" style={{ color: "#64748B" }}>{g.name}</div>
+                  <div className="flex-1 h-5 rounded-sm overflow-hidden" style={{ background: "#F0F2F5" }}>
                     <div className="h-full rounded-sm flex items-center px-2 text-[10px] font-semibold text-white"
                       style={{ width: `${pct}%`, background: g.color, minWidth: 40 }}>
                       {g.value.toLocaleString()}
@@ -161,13 +163,13 @@ export default function ViewershipOverview() {
               <div key={g.region} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full" style={{ background: g.color }} />
-                  <span className="text-[11px]" style={{ color: "#8888A8" }}>{g.region}</span>
+                  <span className="text-[11px]" style={{ color: "#64748B" }}>{g.region}</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-24 h-2 rounded-full overflow-hidden" style={{ background: "#1E1E35" }}>
+                  <div className="w-24 h-2 rounded-full overflow-hidden" style={{ background: "#F0F2F5" }}>
                     <div className="h-full rounded-full" style={{ width: `${g.pct}%`, background: g.color }} />
                   </div>
-                  <span className="text-[11px] font-mono font-semibold text-white w-8 text-right">{g.pct}%</span>
+                  <span className="text-[11px] font-mono font-semibold w-8 text-right" style={{ color: "#1A1A2E" }}>{g.pct}%</span>
                 </div>
               </div>
             ))}
@@ -179,14 +181,14 @@ export default function ViewershipOverview() {
           <div className="space-y-2">
             {trendingContent.slice(0, 7).map((c, i) => (
               <div key={c.id} className="flex items-center gap-2">
-                <span className="text-[10px] font-mono w-4 text-right" style={{ color: "#555580" }}>{i + 1}</span>
+                <span className="text-[10px] font-mono w-4 text-right" style={{ color: "#94A3B8" }}>{i + 1}</span>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[11px] font-medium text-white truncate">{c.title}</div>
-                  <div className="text-[10px]" style={{ color: "#555580" }}>{c.genre} · {c.lang}</div>
+                  <div className="text-[11px] font-medium truncate" style={{ color: "#1A1A2E" }}>{c.title}</div>
+                  <div className="text-[10px]" style={{ color: "#94A3B8" }}>{c.genre} · {c.lang}</div>
                 </div>
                 <div className="flex flex-col items-end gap-0.5">
                   <MiniSparkline data={c.velocity} />
-                  <span className="text-[10px] font-mono" style={{ color: "#2ECC71" }}>{c.delta}</span>
+                  <span className="text-[10px] font-mono" style={{ color: "#16A34A" }}>{c.delta}</span>
                 </div>
               </div>
             ))}

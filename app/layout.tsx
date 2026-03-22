@@ -15,7 +15,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased" style={{ background: "#0F0F1A" }}>
+      <body className="antialiased" style={{ background: "#F4F6F8" }}>
         <GlobalHeader />
         <Sidebar />
         <main

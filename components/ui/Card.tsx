@@ -10,7 +10,7 @@ export function Card({ children, className = "", style }: CardProps) {
   return (
     <div
       className={`rounded-xl p-4 ${className}`}
-      style={{ background: "#16162A", border: "1px solid #2A2A45", ...style }}
+      style={{ background: "#FFFFFF", border: "1px solid #E0E4EA", ...style }}
     >
       {children}
     </div>
@@ -21,8 +21,8 @@ export function CardHeader({ title, subtitle, action }: { title: string; subtitl
   return (
     <div className="flex items-start justify-between mb-4">
       <div>
-        <h3 className="text-sm font-semibold text-white">{title}</h3>
-        {subtitle && <p className="text-xs mt-0.5" style={{ color: "#8888A8" }}>{subtitle}</p>}
+        <h3 className="text-sm font-semibold" style={{ color: "#1A1A2E" }}>{title}</h3>
+        {subtitle && <p className="text-xs mt-0.5" style={{ color: "#64748B" }}>{subtitle}</p>}
       </div>
       {action && <div>{action}</div>}
     </div>

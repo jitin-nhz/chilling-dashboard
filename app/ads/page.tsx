@@ -15,8 +15,8 @@ import { Activity, AlertCircle, CheckCircle, Zap, TrendingUp, IndianRupee } from
 const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: { color: string; name: string; value: number }[]; label?: string }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="rounded-lg p-3 text-xs" style={{ background: "#1A1A2E", border: "1px solid #2A2A45" }}>
-        <p className="mb-1 font-medium" style={{ color: "#E8E8F0" }}>{label}</p>
+      <div className="rounded-lg p-3 text-xs" style={{ background: "#FFFFFF", border: "1px solid #E0E4EA" }}>
+        <p className="mb-1 font-medium" style={{ color: "#1A1A2E" }}>{label}</p>
         {payload.map((entry, i) => (
           <p key={i} style={{ color: entry.color }}>{entry.name}: {entry.value.toLocaleString()}</p>
         ))}
@@ -51,7 +51,7 @@ function GaugeArc({ value, max, color, label, unit = "%" }: { value: number; max
         {/* Background arc */}
         <path
           d={`M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArc1} 1 ${end1.x} ${end1.y}`}
-          fill="none" stroke="#2A2A45" strokeWidth="8" strokeLinecap="round"
+          fill="none" stroke="#E8ECF0" strokeWidth="8" strokeLinecap="round"
         />
         {/* Value arc */}
         <path
@@ -62,16 +62,16 @@ function GaugeArc({ value, max, color, label, unit = "%" }: { value: number; max
           {value}{unit}
         </text>
       </svg>
-      <span className="text-[10px] -mt-1" style={{ color: "#8888A8" }}>{label}</span>
+      <span className="text-[10px] -mt-1" style={{ color: "#64748B" }}>{label}</span>
     </div>
   );
 }
 
 function SSAIStatusBadge({ status }: { status: "healthy" | "degraded" | "critical" }) {
   const config = {
-    healthy: { color: "#2ECC71", bg: "rgba(46,204,113,0.1)", border: "rgba(46,204,113,0.3)", label: "Healthy", icon: CheckCircle },
-    degraded: { color: "#F39C12", bg: "rgba(243,156,18,0.1)", border: "rgba(243,156,18,0.3)", label: "Degraded", icon: AlertCircle },
-    critical: { color: "#E74C3C", bg: "rgba(231,76,60,0.1)", border: "rgba(231,76,60,0.3)", label: "Critical", icon: AlertCircle },
+    healthy: { color: "#16A34A", bg: "rgba(46,204,113,0.1)", border: "rgba(46,204,113,0.3)", label: "Healthy", icon: CheckCircle },
+    degraded: { color: "#D97706", bg: "rgba(243,156,18,0.1)", border: "rgba(243,156,18,0.3)", label: "Degraded", icon: AlertCircle },
+    critical: { color: "#DC2626", bg: "rgba(231,76,60,0.1)", border: "rgba(231,76,60,0.3)", label: "Critical", icon: AlertCircle },
   }[status];
   const Icon = config.icon;
   return (
@@ -112,20 +112,20 @@ export default function AdsPerformance() {
 
   const fillRateSlice = fillRateData.slice(6, 24); // Show daytime
 
-  const completionColors = (v: number) => v >= 80 ? "#2ECC71" : v >= 65 ? "#F0A500" : "#E74C3C";
+  const completionColors = (v: number) => v >= 80 ? "#16A34A" : v >= 65 ? "#F0A500" : "#DC2626";
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-white">Ads Performance</h1>
-        <p className="text-sm mt-1" style={{ color: "#8888A8" }}>CPM analytics, SSAI health, and fill rate monitoring</p>
+        <h1 style={{ color: "#1A1A2E" }} className="text-xl font-bold">Ads Performance</h1>
+        <p className="text-sm mt-1" style={{ color: "#64748B" }}>CPM analytics, SSAI health, and fill rate monitoring</p>
       </div>
 
       {/* KPI Row */}
       <div className="grid grid-cols-4 gap-4">
         <StatCard label="Avg Platform CPM" value="₹118" delta="+₹12 vs last week" deltaType="up" icon={<IndianRupee size={16} />} />
         <StatCard label="Today's Ad Revenue" value="₹28,400" delta="+8.2% vs yesterday" deltaType="up" icon={<TrendingUp size={16} />} accent="#F0A500" />
-        <StatCard label="Overall Fill Rate" value="84%" delta="+2% vs last week" deltaType="up" icon={<Activity size={16} />} accent="#2ECC71" />
+        <StatCard label="Overall Fill Rate" value="84%" delta="+2% vs last week" deltaType="up" icon={<Activity size={16} />} accent="#16A34A" />
         <StatCard label="SSAI Latency P95" value={`${ssaiStats.p95}ms`} delta="SLA: <200ms ✓" deltaType="up" icon={<Zap size={16} />} accent="#9B59B6" />
       </div>
 
@@ -139,21 +139,21 @@ export default function AdsPerformance() {
         <div className="grid grid-cols-5 gap-4">
           {/* Latency gauges */}
           <div className="col-span-2 flex items-center justify-around">
-            <GaugeArc value={ssaiStats.p50} max={200} color="#2ECC71" label="P50 ms" unit="ms" />
+            <GaugeArc value={ssaiStats.p50} max={200} color="#16A34A" label="P50 ms" unit="ms" />
             <GaugeArc value={ssaiStats.p95} max={200} color="#F0A500" label="P95 ms" unit="ms" />
-            <GaugeArc value={ssaiStats.p99} max={300} color={ssaiStats.p99 < 200 ? "#0A7B8C" : "#E74C3C"} label="P99 ms" unit="ms" />
+            <GaugeArc value={ssaiStats.p99} max={300} color={ssaiStats.p99 < 200 ? "#0A7B8C" : "#DC2626"} label="P99 ms" unit="ms" />
           </div>
 
           {/* Latency chart */}
           <div className="col-span-3">
-            <div className="text-xs mb-2" style={{ color: "#8888A8" }}>Stitch latency — 30 min history</div>
+            <div className="text-xs mb-2" style={{ color: "#64748B" }}>Stitch latency — 30 min history</div>
             <ResponsiveContainer width="100%" height={120}>
               <LineChart data={latencyData} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2A2A45" />
-                <XAxis dataKey="t" tick={{ fill: "#555580", fontSize: 9 }} tickLine={false} interval={4} />
-                <YAxis tick={{ fill: "#555580", fontSize: 10 }} tickLine={false} axisLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#E8ECF0" />
+                <XAxis dataKey="t" tick={{ fill: "#94A3B8", fontSize: 9 }} tickLine={false} interval={4} />
+                <YAxis tick={{ fill: "#94A3B8", fontSize: 10 }} tickLine={false} axisLine={false} />
                 <Tooltip content={<CustomTooltip />} />
-                <Line type="monotone" dataKey="p50" stroke="#2ECC71" strokeWidth={1.5} dot={false} name="P50" />
+                <Line type="monotone" dataKey="p50" stroke="#16A34A" strokeWidth={1.5} dot={false} name="P50" />
                 <Line type="monotone" dataKey="p95" stroke="#F0A500" strokeWidth={1.5} dot={false} name="P95" />
                 <Line type="monotone" dataKey="p99" stroke="#0A7B8C" strokeWidth={1.5} dot={false} name="P99" />
               </LineChart>
@@ -169,10 +169,10 @@ export default function AdsPerformance() {
             { label: "Pre-Roll Fill", value: `${ssaiStats.fillRate.preRoll}%`, threshold: "Target: >85%", ok: ssaiStats.fillRate.preRoll >= 85 },
             { label: "Mid-Roll Fill", value: `${ssaiStats.fillRate.midRoll}%`, threshold: "Target: >80%", ok: ssaiStats.fillRate.midRoll >= 80 },
           ].map(s => (
-            <div key={s.label} className="p-3 rounded-lg text-center" style={{ background: "#1E1E35" }}>
-              <div className="text-xl font-bold font-mono" style={{ color: s.ok ? "#2ECC71" : "#E74C3C" }}>{s.value}</div>
-              <div className="text-[10px] mt-1 text-white">{s.label}</div>
-              <div className="text-[9px] mt-0.5" style={{ color: s.ok ? "#2ECC71" : "#E74C3C" }}>{s.threshold}</div>
+            <div key={s.label} className="p-3 rounded-lg text-center" style={{ background: "#F0F2F5" }}>
+              <div className="text-xl font-bold font-mono" style={{ color: s.ok ? "#16A34A" : "#DC2626" }}>{s.value}</div>
+              <div style={{ color: "#1A1A2E" }}>{s.label}</div>
+              <div className="text-[9px] mt-0.5" style={{ color: s.ok ? "#16A34A" : "#DC2626" }}>{s.threshold}</div>
             </div>
           ))}
         </div>
@@ -198,17 +198,17 @@ export default function AdsPerformance() {
               return (
                 <div key={i}>
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] text-white truncate flex-1 mr-2">{seg.segment}</span>
+                    <span style={{ color: "#1A1A2E" }}>{seg.segment}</span>
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className="text-[10px]" style={{ color: "#8888A8" }}>{seg.size.toLocaleString()} users</span>
+                      <span className="text-[10px]" style={{ color: "#64748B" }}>{seg.size.toLocaleString()} users</span>
                       <span className="text-xs font-bold font-mono" style={{ color: seg.color }}>₹{seg.cpm}</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "#1E1E35" }}>
+                    <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "#F0F2F5" }}>
                       <div className="h-full rounded-full" style={{ width: `${pct}%`, background: seg.color }} />
                     </div>
-                    <span className="text-[10px] w-12 text-right" style={{ color: "#8888A8" }}>{seg.completion}% comp.</span>
+                    <span className="text-[10px] w-12 text-right" style={{ color: "#64748B" }}>{seg.completion}% comp.</span>
                   </div>
                 </div>
               );
@@ -235,9 +235,9 @@ export default function AdsPerformance() {
                   <stop offset="95%" stopColor="#F0A500" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#2A2A45" />
-              <XAxis dataKey="hour" tick={{ fill: "#555580", fontSize: 9 }} tickLine={false} interval={2} />
-              <YAxis tick={{ fill: "#555580", fontSize: 10 }} tickLine={false} axisLine={false} domain={[40, 100]}
+              <CartesianGrid strokeDasharray="3 3" stroke="#E8ECF0" />
+              <XAxis dataKey="hour" tick={{ fill: "#94A3B8", fontSize: 9 }} tickLine={false} interval={2} />
+              <YAxis tick={{ fill: "#94A3B8", fontSize: 10 }} tickLine={false} axisLine={false} domain={[40, 100]}
                 tickFormatter={v => `${v}%`} />
               <Tooltip content={<CustomTooltip />} />
               <Area type="monotone" dataKey="preRoll" name="Pre-roll" stroke="#0A7B8C" strokeWidth={2} fill="url(#preGrad)" dot={false} />
@@ -257,16 +257,16 @@ export default function AdsPerformance() {
             <table className="w-full text-xs">
               <thead>
                 <tr>
-                  <th className="text-left py-2 pr-4" style={{ color: "#8888A8" }}>Segment</th>
+                  <th className="text-left py-2 pr-4" style={{ color: "#64748B" }}>Segment</th>
                   {["Morning", "Afternoon", "Evening", "Night"].map(t => (
-                    <th key={t} className="text-center py-2 px-3" style={{ color: "#8888A8" }}>{t}</th>
+                    <th key={t} className="text-center py-2 px-3" style={{ color: "#64748B" }}>{t}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {adCompletionMatrix.map((row) => (
                   <tr key={row.segment}>
-                    <td className="py-2 pr-4 text-white font-medium">{row.segment}</td>
+                    <td style={{ color: "#1A1A2E" }}>{row.segment}</td>
                     {[row.morning, row.afternoon, row.evening, row.night].map((v, i) => (
                       <td key={i} className="py-2 px-3 text-center">
                         <div className="inline-block px-2.5 py-1 rounded-md font-mono font-bold"
@@ -281,9 +281,9 @@ export default function AdsPerformance() {
             </table>
           </div>
           <div className="flex gap-4 mt-3 text-[10px]">
-            <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-sm" style={{ background: "#2ECC7120" }} /><span style={{ color: "#2ECC71" }}>≥80%</span></div>
+            <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-sm" style={{ background: "#16A34A20" }} /><span style={{ color: "#16A34A" }}>≥80%</span></div>
             <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-sm" style={{ background: "#F0A50020" }} /><span style={{ color: "#F0A500" }}>65–79%</span></div>
-            <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-sm" style={{ background: "#E74C3C20" }} /><span style={{ color: "#E74C3C" }}>&lt;65%</span></div>
+            <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-sm" style={{ background: "#DC262620" }} /><span style={{ color: "#DC2626" }}>&lt;65%</span></div>
           </div>
         </Card>
 
@@ -294,23 +294,23 @@ export default function AdsPerformance() {
             <AreaChart data={revenueTrend} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#2ECC71" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#2ECC71" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#16A34A" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#16A34A" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#2A2A45" />
-              <XAxis dataKey="date" tick={{ fill: "#555580", fontSize: 9 }} tickLine={false} interval={6} />
-              <YAxis tick={{ fill: "#555580", fontSize: 9 }} tickLine={false} axisLine={false}
+              <CartesianGrid strokeDasharray="3 3" stroke="#E8ECF0" />
+              <XAxis dataKey="date" tick={{ fill: "#94A3B8", fontSize: 9 }} tickLine={false} interval={6} />
+              <YAxis tick={{ fill: "#94A3B8", fontSize: 9 }} tickLine={false} axisLine={false}
                 tickFormatter={v => `₹${(v / 1000).toFixed(0)}k`} />
-              <Tooltip contentStyle={{ background: "#1A1A2E", border: "1px solid #2A2A45", borderRadius: 8 }}
-                itemStyle={{ color: "#2ECC71" }} labelStyle={{ color: "#8888A8" }}
+              <Tooltip contentStyle={{ background: "#FFFFFF", border: "1px solid #E0E4EA", borderRadius: 8 }}
+                itemStyle={{ color: "#16A34A" }} labelStyle={{ color: "#64748B" }}
                 formatter={v => [`₹${Number(v).toLocaleString("en-IN")}`, "Revenue"]} />
-              <Area type="monotone" dataKey="revenue" stroke="#2ECC71" strokeWidth={2} fill="url(#revGrad)" dot={false} />
+              <Area type="monotone" dataKey="revenue" stroke="#16A34A" strokeWidth={2} fill="url(#revGrad)" dot={false} />
             </AreaChart>
           </ResponsiveContainer>
           <div className="mt-2 text-center">
-            <span className="text-xs font-mono font-bold" style={{ color: "#2ECC71" }}>₹28,400</span>
-            <span className="text-xs ml-1" style={{ color: "#8888A8" }}>avg daily</span>
+            <span className="text-xs font-mono font-bold" style={{ color: "#16A34A" }}>₹28,400</span>
+            <span className="text-xs ml-1" style={{ color: "#64748B" }}>avg daily</span>
           </div>
         </Card>
       </div>

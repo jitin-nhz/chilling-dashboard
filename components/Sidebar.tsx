@@ -30,8 +30,8 @@ export default function Sidebar() {
       className="fixed left-0 top-16 bottom-0 z-40 flex flex-col transition-all duration-300"
       style={{
         width: collapsed ? 64 : 220,
-        background: "rgba(22, 22, 42, 0.98)",
-        borderRight: "1px solid #2A2A45",
+        background: "#FFFFFF",
+        borderRight: "1px solid #E0E4EA",
       }}
     >
       <nav className="flex-1 py-4 overflow-y-auto">
@@ -45,24 +45,24 @@ export default function Sidebar() {
               style={{
                 padding: collapsed ? "10px 0" : "10px 12px",
                 justifyContent: collapsed ? "center" : "flex-start",
-                background: active ? "rgba(10, 123, 140, 0.15)" : "transparent",
+                background: active ? "rgba(10, 123, 140, 0.08)" : "transparent",
                 borderLeft: active ? "2px solid #0A7B8C" : "2px solid transparent",
               }}
             >
               <Icon
                 size={18}
-                style={{ color: active ? "#0A7B8C" : "#8888A8", flexShrink: 0 }}
-                className="group-hover:text-white transition-colors"
+                style={{ color: active ? "#0A7B8C" : "#94A3B8", flexShrink: 0 }}
+                className="group-hover:text-neutral-900 transition-colors"
               />
               {!collapsed && (
                 <div>
                   <div
                     className="text-[11px] font-semibold leading-tight"
-                    style={{ color: active ? "#E8E8F0" : "#8888A8" }}
+                    style={{ color: active ? "#1A1A2E" : "#64748B" }}
                   >
                     {label}
                   </div>
-                  <div className="text-[10px] leading-tight" style={{ color: active ? "#0A7B8C" : "#555580" }}>
+                  <div className="text-[10px] leading-tight" style={{ color: active ? "#0A7B8C" : "#94A3B8" }}>
                     {sublabel}
                   </div>
                 </div>
@@ -75,16 +75,16 @@ export default function Sidebar() {
       {/* Collapse toggle */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="flex items-center justify-center h-10 w-full transition-colors hover:bg-white/5"
-        style={{ borderTop: "1px solid #2A2A45", color: "#8888A8" }}
+        className="flex items-center justify-center h-10 w-full transition-colors hover:bg-gray-50"
+        style={{ borderTop: "1px solid #E0E4EA", color: "#94A3B8" }}
       >
         {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
       </button>
 
       {/* Branding */}
       {!collapsed && (
-        <div className="p-4" style={{ borderTop: "1px solid #2A2A45" }}>
-          <div className="text-[10px] leading-relaxed" style={{ color: "#555580" }}>
+        <div className="p-4" style={{ borderTop: "1px solid #E0E4EA" }}>
+          <div className="text-[10px] leading-relaxed" style={{ color: "#94A3B8" }}>
             Built by{" "}
             <span style={{ color: "#0A7B8C" }}>TheNineHertz</span>
             <br />
