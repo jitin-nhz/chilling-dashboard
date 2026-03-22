@@ -1,0 +1,210 @@
+"use client";
+
+import {
+  XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
+  AreaChart, Area, ComposedChart, Line, Cell, Bar,
+} from "recharts";
+import { Card, CardHeader } from "@/components/ui/Card";
+import { StatCard } from "@/components/ui/StatCard";
+import {
+  contentCompletionRates, contentGapData, languageShiftData, contentROI
+} from "@/lib/data";
+import { TrendingUp, Film, AlertTriangle, DollarSign } from "lucide-react";
+
+const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: { color: string; name: string; value: number }[]; label?: string }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="rounded-lg p-3 text-xs" style={{ background: "#1A1A2E", border: "1px solid #2A2A45" }}>
+        <p className="mb-1 font-medium" style={{ color: "#E8E8F0" }}>{label}</p>
+        {payload.map((entry, i) => (
+          <p key={i} style={{ color: entry.color }}>{entry.name}: {entry.value}</p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
+function RoiBar({ value, max }: { value: number; max: number }) {
+  const pct = (value / max) * 100;
+  const color = value >= 4 ? "#2ECC71" : value >= 3 ? "#F0A500" : "#0A7B8C";
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "#1E1E35" }}>
+        <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: color }} />
+      </div>
+      <span className="text-[10px] font-mono w-6 text-right" style={{ color }}>{value}x</span>
+    </div>
+  );
+}
+
+export default function ContentIntelligence() {
+  const maxRoi = Math.max(...contentROI.map(c => c.roi));
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-xl font-bold text-white">Content Intelligence</h1>
+        <p className="text-sm mt-1" style={{ color: "#8888A8" }}>Content performance, gap analysis, ROI, and language trends</p>
+      </div>
+
+      {/* KPI Row */}
+      <div className="grid grid-cols-4 gap-4">
+        <StatCard label="Avg Completion Rate" value="74%" delta="+3% vs last month" deltaType="up" icon={<Film size={16} />} />
+        <StatCard label="Top Content ROI" value="5.1×" delta="Scam 2026" deltaType="up" icon={<DollarSign size={16} />} accent="#F0A500" />
+        <StatCard label="Content Gap — Romance" value="2.4×" delta="Demand exceeds supply" deltaType="down" icon={<AlertTriangle size={16} />} accent="#E74C3C" />
+        <StatCard label="Avg Ad Rev / Title" value="₹3.2L" delta="+12% vs last quarter" deltaType="up" icon={<TrendingUp size={16} />} accent="#2ECC71" />
+      </div>
+
+      {/* Content Gap Analysis */}
+      <Card>
+        <CardHeader
+          title="Content Gap Analysis"
+          subtitle="Genre demand index vs supply index — gap > 1.5× shown in red"
+          action={
+            <span className="text-xs px-2 py-1 rounded-full"
+              style={{ background: "rgba(231,76,60,0.1)", color: "#E74C3C", border: "1px solid rgba(231,76,60,0.2)" }}>
+              Romance demand 2.4× supply
+            </span>
+          }
+        />
+        <ResponsiveContainer width="100%" height={240}>
+          <ComposedChart data={contentGapData} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#2A2A45" />
+            <XAxis dataKey="genre" tick={{ fill: "#8888A8", fontSize: 10 }} tickLine={false} />
+            <YAxis yAxisId="left" tick={{ fill: "#555580", fontSize: 10 }} tickLine={false} axisLine={false} domain={[0, 1.2]} />
+            <YAxis yAxisId="right" orientation="right" tick={{ fill: "#555580", fontSize: 10 }} tickLine={false} axisLine={false} domain={[0, 3]} />
+            <Tooltip
+              contentStyle={{ background: "#1A1A2E", border: "1px solid #2A2A45", borderRadius: 8 }}
+              itemStyle={{ color: "#E8E8F0" }} labelStyle={{ color: "#8888A8" }} />
+            <Bar yAxisId="left" dataKey="demand" name="Demand Index" radius={[3, 3, 0, 0]}>
+              {contentGapData.map((entry, i) => (
+                <Cell key={i} fill={entry.ratio >= 1.5 ? "#E74C3C" : entry.ratio >= 1.1 ? "#F0A500" : "#2ECC71"} opacity={0.8} />
+              ))}
+            </Bar>
+            <Bar yAxisId="left" dataKey="supply" name="Supply Index" fill="#2A2A45" radius={[3, 3, 0, 0]} />
+            <Line yAxisId="right" type="monotone" dataKey="ratio" name="Demand/Supply Ratio"
+              stroke="#F0A500" strokeWidth={2} dot={{ fill: "#F0A500", r: 4 }} />
+          </ComposedChart>
+        </ResponsiveContainer>
+        <div className="flex gap-4 mt-2 flex-wrap">
+          <div className="flex items-center gap-1.5 text-[10px]"><div className="w-3 h-3 rounded-sm" style={{ background: "#E74C3C" }} /><span style={{ color: "#E74C3C" }}>Gap &gt;1.5× (commission opportunity)</span></div>
+          <div className="flex items-center gap-1.5 text-[10px]"><div className="w-3 h-3 rounded-sm" style={{ background: "#F0A500" }} /><span style={{ color: "#F0A500" }}>Gap 1.1–1.5×</span></div>
+          <div className="flex items-center gap-1.5 text-[10px]"><div className="w-3 h-3 rounded-sm" style={{ background: "#2ECC71" }} /><span style={{ color: "#2ECC71" }}>Balanced / surplus</span></div>
+        </div>
+        <div className="mt-3 p-3 rounded-lg text-xs"
+          style={{ background: "rgba(231, 76, 60, 0.08)", color: "#E74C3C", border: "1px solid rgba(231,76,60,0.15)" }}>
+          💡 <span className="text-white">Romance demand is 2.4× supply right now. Your next commission decision is in this chart.</span>
+        </div>
+      </Card>
+
+      {/* Top content + ROI */}
+      <div className="grid grid-cols-2 gap-4">
+        {/* Completion rates */}
+        <Card>
+          <CardHeader title="Top Content by Completion Rate" subtitle="With churn-contribution score" />
+          <div className="space-y-2">
+            {contentCompletionRates.map((c, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <span className="text-[10px] font-mono w-4 text-right flex-shrink-0" style={{ color: "#555580" }}>{i + 1}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-0.5">
+                    <span className="text-[11px] font-medium text-white truncate">{c.title}</span>
+                    <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                      <span className="text-[10px] px-1.5 py-0.5 rounded"
+                        style={{ background: "rgba(46,204,113,0.1)", color: "#2ECC71" }}>
+                        {c.completionRate}% complete
+                      </span>
+                      <span className="text-[10px] font-mono"
+                        style={{ color: c.churnContrib < -0.05 ? "#2ECC71" : "#F0A500" }}>
+                        churn {c.churnContrib > 0 ? "+" : ""}{c.churnContrib.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "#1E1E35" }}>
+                    <div className="h-full rounded-full" style={{ width: `${c.completionRate}%`, background: "#0A7B8C" }} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* Content ROI */}
+        <Card>
+          <CardHeader title="Content ROI Index" subtitle="Ad revenue ÷ production cost × engagement" />
+          <div className="space-y-3">
+            {contentROI.map((c, i) => (
+              <div key={i}>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[11px] text-white">{c.title}</span>
+                  <div className="flex items-center gap-3 text-[10px]">
+                    <span style={{ color: "#8888A8" }}>Cost: ₹{c.cost}Cr</span>
+                    <span style={{ color: "#F0A500" }}>Rev: ₹{c.adRevenue}Cr</span>
+                  </div>
+                </div>
+                <RoiBar value={c.roi} max={maxRoi} />
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+
+      {/* Language shift + New vs Catalog */}
+      <div className="grid grid-cols-2 gap-4">
+        {/* Language preference shift */}
+        <Card>
+          <CardHeader title="Language Preference Shift" subtitle="6-month trend (% of sessions)" />
+          <ResponsiveContainer width="100%" height={200}>
+            <AreaChart data={languageShiftData} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#2A2A45" />
+              <XAxis dataKey="month" tick={{ fill: "#555580", fontSize: 10 }} tickLine={false} />
+              <YAxis tick={{ fill: "#555580", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={v => `${v}%`} />
+              <Tooltip content={<CustomTooltip />} />
+              <Area type="monotone" dataKey="Hindi" stroke="#0A7B8C" fill="#0A7B8C" fillOpacity={0.2} strokeWidth={2} stackId="a" />
+              <Area type="monotone" dataKey="Tamil" stroke="#F0A500" fill="#F0A500" fillOpacity={0.2} strokeWidth={1.5} stackId="a" />
+              <Area type="monotone" dataKey="Telugu" stroke="#2ECC71" fill="#2ECC71" fillOpacity={0.2} strokeWidth={1.5} stackId="a" />
+              <Area type="monotone" dataKey="Kannada" stroke="#9B59B6" fill="#9B59B6" fillOpacity={0.15} strokeWidth={1} stackId="a" />
+              <Area type="monotone" dataKey="Bengali" stroke="#E91E8C" fill="#E91E8C" fillOpacity={0.15} strokeWidth={1} stackId="a" />
+              <Area type="monotone" dataKey="Marathi" stroke="#3498DB" fill="#3498DB" fillOpacity={0.1} strokeWidth={1} stackId="a" />
+              <Area type="monotone" dataKey="English" stroke="#E74C3C" fill="#E74C3C" fillOpacity={0.1} strokeWidth={1} stackId="a" />
+            </AreaChart>
+          </ResponsiveContainer>
+          <div className="mt-2 text-xs text-center" style={{ color: "#8888A8" }}>
+            South Indian language share <span style={{ color: "#F0A500" }}>↑ growing</span> — Tamil+Telugu+Kannada now 38% combined
+          </div>
+        </Card>
+
+        {/* New vs Catalog CPM */}
+        <Card>
+          <CardHeader title="New Releases vs Catalog CPM" subtitle="Revenue comparison by content age" />
+          <div className="flex flex-col gap-4 h-full justify-center py-4">
+            {[
+              { label: "Added this week", cpm: 220, count: 12, color: "#F0A500" },
+              { label: "Added this month", cpm: 185, count: 127, color: "#0A7B8C" },
+              { label: "3–12 months old", cpm: 145, count: 380, color: "#2ECC71" },
+              { label: "Catalog (1+ year)", cpm: 82, count: 328, color: "#8888A8" },
+            ].map(item => (
+              <div key={item.label}>
+                <div className="flex justify-between text-xs mb-1">
+                  <span style={{ color: "#8888A8" }}>{item.label}</span>
+                  <div className="flex gap-3">
+                    <span style={{ color: "#555580" }}>{item.count} titles</span>
+                    <span className="font-mono font-bold" style={{ color: item.color }}>₹{item.cpm} CPM</span>
+                  </div>
+                </div>
+                <div className="h-3 rounded-full overflow-hidden" style={{ background: "#1E1E35" }}>
+                  <div className="h-full rounded-full" style={{ width: `${(item.cpm / 220) * 100}%`, background: item.color }} />
+                </div>
+              </div>
+            ))}
+            <div className="mt-2 p-2 rounded-lg text-xs text-center"
+              style={{ background: "rgba(240,165,0,0.08)", color: "#F0A500", border: "1px solid rgba(240,165,0,0.15)" }}>
+              New releases command 2.7× catalog CPM premium
+            </div>
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+}

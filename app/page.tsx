@@ -1,101 +1,198 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import {
+  AreaChart, Area, PieChart, Pie, Cell,
+  XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
+} from "recharts";
+import { Card, CardHeader } from "@/components/ui/Card";
+import { StatCard } from "@/components/ui/StatCard";
+import ViewershipHeatmap from "@/components/charts/ViewershipHeatmap";
+import {
+  dauMauTrend, genreData, deviceData, geoData, trendingContent
+} from "@/lib/data";
+import { Eye, Users, Clock, TrendingUp } from "lucide-react";
+
+const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: { color: string; name: string; value: number }[]; label?: string }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="rounded-lg p-3 text-xs" style={{ background: "#1A1A2E", border: "1px solid #2A2A45" }}>
+        <p className="mb-1 font-medium" style={{ color: "#E8E8F0" }}>{label}</p>
+        {payload.map((entry, i) => (
+          <p key={i} style={{ color: entry.color }}>
+            {entry.name}: {entry.value.toLocaleString("en-IN")}
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
+function MiniSparkline({ data }: { data: number[] }) {
+  const max = Math.max(...data);
+  const min = Math.min(...data);
+  const range = max - min || 1;
+  const points = data.map((v, i) => `${(i / (data.length - 1)) * 60},${18 - ((v - min) / range) * 16}`).join(" ");
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <svg width="60" height="18" viewBox="0 0 60 18">
+      <polyline points={points} fill="none" stroke="#0A7B8C" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+export default function ViewershipOverview() {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-xl font-bold text-white">Viewership Overview</h1>
+        <p className="text-sm mt-1" style={{ color: "#8888A8" }}>
+          Real-time platform activity · Last updated: {new Date().toLocaleTimeString("en-IN")}
+        </p>
+      </div>
+
+      {/* KPI Row */}
+      <div className="grid grid-cols-4 gap-4">
+        <StatCard label="Daily Active Users" value="12,400" delta="+3.2% vs last week" deltaType="up" icon={<Users size={16} />} />
+        <StatCard label="Monthly Active Users" value="48,920" delta="+1.8% vs last month" deltaType="up" icon={<Eye size={16} />} accent="#F0A500" />
+        <StatCard label="Avg Session Length" value="42 min" delta="+4 min vs last week" deltaType="up" icon={<Clock size={16} />} accent="#2ECC71" />
+        <StatCard label="Content Starts Today" value="38,240" delta="+5.1% vs yesterday" deltaType="up" icon={<TrendingUp size={16} />} accent="#9B59B6" />
+      </div>
+
+      {/* DAU/MAU + Device */}
+      <div className="grid grid-cols-5 gap-4">
+        <Card className="col-span-3">
+          <CardHeader title="DAU / MAU Trend" subtitle="30-day rolling window" />
+          <ResponsiveContainer width="100%" height={200}>
+            <AreaChart data={dauMauTrend} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="dauGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#0A7B8C" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#0A7B8C" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="mauGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#F0A500" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="#F0A500" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#2A2A45" />
+              <XAxis dataKey="date" tick={{ fill: "#555580", fontSize: 10 }} tickLine={false} interval={4} />
+              <YAxis tick={{ fill: "#555580", fontSize: 10 }} tickLine={false} axisLine={false}
+                tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
+              <Tooltip content={<CustomTooltip />} />
+              <Area type="monotone" dataKey="MAU" stroke="#F0A500" strokeWidth={1.5} fill="url(#mauGrad)" dot={false} name="MAU" />
+              <Area type="monotone" dataKey="DAU" stroke="#0A7B8C" strokeWidth={2} fill="url(#dauGrad)" dot={false} name="DAU" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </Card>
+
+        <Card className="col-span-2">
+          <CardHeader title="Device Distribution" subtitle="Active sessions by device" />
+          <div className="flex items-center gap-4">
+            <ResponsiveContainer width={130} height={130}>
+              <PieChart>
+                <Pie data={deviceData} dataKey="value" cx="50%" cy="50%" innerRadius={35} outerRadius={58} paddingAngle={2}>
+                  {deviceData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                </Pie>
+                <Tooltip formatter={(v) => `${v}%`}
+                  contentStyle={{ background: "#1A1A2E", border: "1px solid #2A2A45", borderRadius: 8 }}
+                  itemStyle={{ color: "#E8E8F0" }} />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="flex-1 space-y-2">
+              {deviceData.map((d) => (
+                <div key={d.name} className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full" style={{ background: d.color }} />
+                    <span className="text-[11px]" style={{ color: "#8888A8" }}>{d.name}</span>
+                  </div>
+                  <span className="text-[11px] font-mono font-semibold text-white">{d.value}%</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Heatmap */}
+      <Card>
+        <CardHeader
+          title="Viewership Heatmap"
+          subtitle="Content consumption intensity by day × hour (IST)"
+          action={
+            <span className="text-[10px] px-2 py-1 rounded-full"
+              style={{ background: "rgba(240, 165, 0, 0.1)", color: "#F0A500", border: "1px solid rgba(240,165,0,0.2)" }}>
+              Peak: 9–11 PM IST
+            </span>
+          }
+        />
+        <ViewershipHeatmap />
+        <div className="mt-3 p-3 rounded-lg text-xs" style={{ background: "rgba(10, 123, 140, 0.08)", color: "#0A7B8C", border: "1px solid rgba(10,123,140,0.15)" }}>
+          💡 <span className="text-white">These 9–11pm spikes represent your highest-CPM ad window — the engine targets this automatically.</span>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </Card>
+
+      {/* Genre + Geo + Trending */}
+      <div className="grid grid-cols-3 gap-4">
+        <Card>
+          <CardHeader title="Content Starts by Genre" subtitle="Today's distribution" />
+          <div className="space-y-2">
+            {genreData.map((g) => {
+              const maxVal = Math.max(...genreData.map(x => x.value));
+              const pct = (g.value / maxVal) * 100;
+              return (
+                <div key={g.name} className="flex items-center gap-2">
+                  <div className="text-[11px] w-20 text-right" style={{ color: "#8888A8" }}>{g.name}</div>
+                  <div className="flex-1 h-5 rounded-sm overflow-hidden" style={{ background: "#1E1E35" }}>
+                    <div className="h-full rounded-sm flex items-center px-2 text-[10px] font-semibold text-white"
+                      style={{ width: `${pct}%`, background: g.color, minWidth: 40 }}>
+                      {g.value.toLocaleString()}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+
+        <Card>
+          <CardHeader title="Geo Distribution" subtitle="Users by region" />
+          <div className="space-y-3">
+            {geoData.map((g) => (
+              <div key={g.region} className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full" style={{ background: g.color }} />
+                  <span className="text-[11px]" style={{ color: "#8888A8" }}>{g.region}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-24 h-2 rounded-full overflow-hidden" style={{ background: "#1E1E35" }}>
+                    <div className="h-full rounded-full" style={{ width: `${g.pct}%`, background: g.color }} />
+                  </div>
+                  <span className="text-[11px] font-mono font-semibold text-white w-8 text-right">{g.pct}%</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        <Card>
+          <CardHeader title="Top 10 Trending" subtitle="7-day velocity" />
+          <div className="space-y-2">
+            {trendingContent.slice(0, 7).map((c, i) => (
+              <div key={c.id} className="flex items-center gap-2">
+                <span className="text-[10px] font-mono w-4 text-right" style={{ color: "#555580" }}>{i + 1}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[11px] font-medium text-white truncate">{c.title}</div>
+                  <div className="text-[10px]" style={{ color: "#555580" }}>{c.genre} · {c.lang}</div>
+                </div>
+                <div className="flex flex-col items-end gap-0.5">
+                  <MiniSparkline data={c.velocity} />
+                  <span className="text-[10px] font-mono" style={{ color: "#2ECC71" }}>{c.delta}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
     </div>
   );
 }
