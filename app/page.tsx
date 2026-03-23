@@ -50,7 +50,7 @@ export default function ViewershipOverview() {
       <div>
         <h1 className="text-xl font-bold" style={{ color: "#1A1A2E" }}>Viewership Overview</h1>
         <p className="text-sm mt-1" style={{ color: "#64748B" }}>
-          Real-time platform activity · Last updated: {new Date().toLocaleTimeString("en-IN")}
+          Worldwide platform activity · Last updated: {new Date().toLocaleTimeString("en-IN")}
         </p>
       </div>
 
@@ -123,13 +123,13 @@ export default function ViewershipOverview() {
           action={
             <span className="text-[10px] px-2 py-1 rounded-full"
               style={{ background: "rgba(240, 165, 0, 0.1)", color: "#D97706", border: "1px solid rgba(240,165,0,0.3)" }}>
-              Peak: 9–11 PM IST
+              Peak: 8–11 PM local
             </span>
           }
         />
         <ViewershipHeatmap />
         <div className="mt-3 p-3 rounded-lg text-xs" style={{ background: "rgba(10, 123, 140, 0.06)", color: "#0A7B8C", border: "1px solid rgba(10,123,140,0.15)" }}>
-          💡 <span style={{ color: "#1A1A2E" }}>These 9–11pm spikes represent your highest-CPM ad window — the engine targets this automatically.</span>
+          💡 <span style={{ color: "#1A1A2E" }}>Prime-time viewing (8–11 PM local) peaks across North America and Europe — these windows command your highest CPM rates and are auto-targeted by the engine.</span>
         </div>
       </Card>
 

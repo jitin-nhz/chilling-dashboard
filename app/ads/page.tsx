@@ -123,8 +123,8 @@ export default function AdsPerformance() {
 
       {/* KPI Row */}
       <div className="grid grid-cols-4 gap-4">
-        <StatCard label="Avg Platform CPM" value="₹118" delta="+₹12 vs last week" deltaType="up" icon={<IndianRupee size={16} />} />
-        <StatCard label="Today's Ad Revenue" value="₹28,400" delta="+8.2% vs yesterday" deltaType="up" icon={<TrendingUp size={16} />} accent="#F0A500" />
+        <StatCard label="Avg Platform CPM" value="$118" delta="+$12 vs last week" deltaType="up" icon={<IndianRupee size={16} />} />
+        <StatCard label="Today's Ad Revenue" value="$28,400" delta="+8.2% vs yesterday" deltaType="up" icon={<TrendingUp size={16} />} accent="#F0A500" />
         <StatCard label="Overall Fill Rate" value="84%" delta="+2% vs last week" deltaType="up" icon={<Activity size={16} />} accent="#16A34A" />
         <StatCard label="SSAI Latency P95" value={`${ssaiStats.p95}ms`} delta="SLA: <200ms ✓" deltaType="up" icon={<Zap size={16} />} accent="#9B59B6" />
       </div>
@@ -187,7 +187,7 @@ export default function AdsPerformance() {
             subtitle="Ranked by effective CPM"
             action={
               <div className="text-xs px-2 py-1 rounded-full" style={{ background: "rgba(240,165,0,0.1)", color: "#F0A500", border: "1px solid rgba(240,165,0,0.2)" }}>
-                Top: ₹210 CPM
+                Top: $210 CPM
               </div>
             }
           />
@@ -201,7 +201,7 @@ export default function AdsPerformance() {
                     <span style={{ color: "#1A1A2E" }}>{seg.segment}</span>
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <span className="text-[10px]" style={{ color: "#64748B" }}>{seg.size.toLocaleString()} users</span>
-                      <span className="text-xs font-bold font-mono" style={{ color: seg.color }}>₹{seg.cpm}</span>
+                      <span className="text-xs font-bold font-mono" style={{ color: seg.color }}>${seg.cpm}</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -216,7 +216,7 @@ export default function AdsPerformance() {
           </div>
           <div className="mt-3 p-2 rounded-lg text-xs text-center"
             style={{ background: "rgba(240,165,0,0.08)", color: "#F0A500", border: "1px solid rgba(240,165,0,0.15)" }}>
-            💡 UK Diaspora · Hindi · Mobile delivers 2.1× T2 India CPM premium
+            💡 North America Smart TV delivers 3.5× SEA CPM premium — prioritize inventory here
           </div>
         </Card>
 
@@ -289,7 +289,7 @@ export default function AdsPerformance() {
 
         {/* Revenue trend */}
         <Card>
-          <CardHeader title="Daily Ad Revenue" subtitle="30-day trend (₹)" />
+          <CardHeader title="Daily Ad Revenue" subtitle="30-day trend ($)" />
           <ResponsiveContainer width="100%" height={200}>
             <AreaChart data={revenueTrend} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
               <defs>
@@ -301,15 +301,15 @@ export default function AdsPerformance() {
               <CartesianGrid strokeDasharray="3 3" stroke="#E8ECF0" />
               <XAxis dataKey="date" tick={{ fill: "#94A3B8", fontSize: 9 }} tickLine={false} interval={6} />
               <YAxis tick={{ fill: "#94A3B8", fontSize: 9 }} tickLine={false} axisLine={false}
-                tickFormatter={v => `₹${(v / 1000).toFixed(0)}k`} />
+                tickFormatter={v => `$${(v / 1000).toFixed(0)}k`} />
               <Tooltip contentStyle={{ background: "#FFFFFF", border: "1px solid #E0E4EA", borderRadius: 8 }}
                 itemStyle={{ color: "#16A34A" }} labelStyle={{ color: "#64748B" }}
-                formatter={v => [`₹${Number(v).toLocaleString("en-IN")}`, "Revenue"]} />
+                formatter={v => [`$${Number(v).toLocaleString("en-IN")}`, "Revenue"]} />
               <Area type="monotone" dataKey="revenue" stroke="#16A34A" strokeWidth={2} fill="url(#revGrad)" dot={false} />
             </AreaChart>
           </ResponsiveContainer>
           <div className="mt-2 text-center">
-            <span className="text-xs font-mono font-bold" style={{ color: "#16A34A" }}>₹28,400</span>
+            <span className="text-xs font-mono font-bold" style={{ color: "#16A34A" }}>$28,400</span>
             <span className="text-xs ml-1" style={{ color: "#64748B" }}>avg daily</span>
           </div>
         </Card>

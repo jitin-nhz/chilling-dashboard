@@ -22,7 +22,7 @@ export default function GlobalHeader() {
   const [vitals, setVitals] = useState({
     activeViewers: baseVitals.activeViewers,
     adImpressions: baseVitals.adImpressions,
-    adRevenue: baseVitals.adRevenuePaise / 100,
+    adRevenue: baseVitals.adRevenueCents / 100,
   });
 
   useEffect(() => {
@@ -101,7 +101,7 @@ export default function GlobalHeader() {
           <div>
             <div className="text-[10px] uppercase tracking-wider mb-0.5" style={{ color: "#64748B" }}>Ad Revenue Today</div>
             <div className="text-sm font-semibold" style={{ color: "#1A1A2E" }}>
-              ₹<AnimatedCounter value={Math.round(vitals.adRevenue)} />
+              $<AnimatedCounter value={Math.round(vitals.adRevenue)} />
             </div>
           </div>
         </div>

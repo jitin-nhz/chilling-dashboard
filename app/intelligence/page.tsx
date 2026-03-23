@@ -26,16 +26,16 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
   return null;
 };
 
-const GENRE_OPTIONS = ["Drama", "Action", "Romance", "Thriller", "Comedy", "Horror", "Documentary", "Family"];
-const LANG_OPTIONS = ["Hindi", "Tamil", "Telugu", "Kannada", "Bengali", "Marathi", "English"];
-const DEVICE_OPTIONS = ["Android Mobile", "iOS", "Smart TV", "Web Browser", "Fire TV"];
-const GEO_OPTIONS = ["Metro India", "T2 India", "T3 India", "Diaspora UAE", "Diaspora UK", "Diaspora USA"];
+const GENRE_OPTIONS = ["Drama", "Sci-Fi", "Thriller", "Comedy", "Action", "Romance", "Horror", "Documentary"];
+const LANG_OPTIONS = ["English", "Spanish", "Korean", "French", "German", "Japanese", "Portuguese"];
+const DEVICE_OPTIONS = ["Smart TV", "iOS", "Android Mobile", "Web Browser", "Gaming Console"];
+const GEO_OPTIONS = ["North America", "Western Europe", "Asia Pacific", "Latin America", "Middle East", "Southeast Asia"];
 
 export default function ViewerIntelligence() {
   const [selectedGenres, setSelectedGenres] = useState<string[]>(["Drama", "Thriller"]);
-  const [selectedLang, setSelectedLang] = useState<string>("Hindi");
+  const [selectedLang, setSelectedLang] = useState<string>("English");
   const [selectedDevice, setSelectedDevice] = useState<string>("Smart TV");
-  const [selectedGeo, setSelectedGeo] = useState<string>("Metro India");
+  const [selectedGeo, setSelectedGeo] = useState<string>("North America");
   const [ageRange, setAgeRange] = useState<string>("25–34");
   const [churnRange, setChurnRange] = useState<number>(0.5);
   const [isBuilding, setIsBuilding] = useState(false);
@@ -52,16 +52,16 @@ export default function ViewerIntelligence() {
     setIsBuilding(true);
     setTimeout(() => {
       // Simulate segment builder result
-      const isMetroHindi = selectedGeo === "Metro India" && selectedLang === "Hindi" && selectedDevice === "Smart TV";
-      const isDiasporaUK = selectedGeo === "Diaspora UK";
-      if (isMetroHindi) {
-        setBuiltSegment({ label: "Metro India · Hindi · Smart TV · 25–34", size: 4820, cpm: 185, churnPct: 7, ltv: 5800 });
-      } else if (isDiasporaUK) {
-        setBuiltSegment({ label: "Diaspora UK · Mobile", size: 1640, cpm: 210, churnPct: 5, ltv: 8400 });
+      const isNorthAmEng = selectedGeo === "North America" && selectedLang === "English" && selectedDevice === "Smart TV";
+      const isWestEurope = selectedGeo === "Western Europe";
+      if (isNorthAmEng) {
+        setBuiltSegment({ label: "North America · English · Smart TV · 25–44", size: 4820, cpm: 28, churnPct: 7, ltv: 580 });
+      } else if (isWestEurope) {
+        setBuiltSegment({ label: "Western Europe · Mobile", size: 2640, cpm: 22, churnPct: 5, ltv: 480 });
       } else {
         const size = Math.round(800 + Math.random() * 6000);
-        const cpm = Math.round(40 + Math.random() * 160);
-        setBuiltSegment({ label: `${selectedGeo} · ${selectedLang} · ${selectedDevice}`, size, cpm, churnPct: Math.round(5 + Math.random() * 20), ltv: Math.round(800 + Math.random() * 5000) });
+        const cpm = Math.round(5 + Math.random() * 25);
+        setBuiltSegment({ label: `${selectedGeo} · ${selectedLang} · ${selectedDevice}`, size, cpm, churnPct: Math.round(5 + Math.random() * 20), ltv: Math.round(80 + Math.random() * 500) });
       }
       setIsBuilding(false);
     }, 1200);
@@ -79,7 +79,7 @@ export default function ViewerIntelligence() {
       <div className="grid grid-cols-4 gap-4">
         <StatCard label="Total Active Users" value="12,400" delta="Last 30 days" deltaType="neutral" icon={<Users size={16} />} />
         <StatCard label="High Churn Risk" value="1,240" delta="10% of active base" deltaType="down" icon={<AlertTriangle size={16} />} accent="#DC2626" />
-        <StatCard label="Avg LTV" value="₹3,200" delta="+₹120 vs last month" deltaType="up" icon={<DollarSign size={16} />} accent="#16A34A" />
+        <StatCard label="Avg LTV" value="$320" delta="+$12 vs last month" deltaType="up" icon={<DollarSign size={16} />} accent="#16A34A" />
         <StatCard label="Avg Churn Score" value="0.24" delta="-0.02 vs last week" deltaType="up" icon={<TrendingDown size={16} />} accent="#F0A500" />
       </div>
 
@@ -106,9 +106,9 @@ export default function ViewerIntelligence() {
                   <button key={g} onClick={() => toggleGenre(g)}
                     className="px-2.5 py-1 rounded-full text-[11px] font-medium transition-all"
                     style={{
-                      background: selectedGenres.includes(g) ? "rgba(10, 123, 140, 0.2)" : "#1E1E35",
-                      color: selectedGenres.includes(g) ? "#0A7B8C" : "#8888A8",
-                      border: selectedGenres.includes(g) ? "1px solid rgba(10, 123, 140, 0.4)" : "1px solid #2A2A45",
+                      background: selectedGenres.includes(g) ? "rgba(10, 123, 140, 0.1)" : "#F0F2F5",
+                      color: selectedGenres.includes(g) ? "#0A7B8C" : "#64748B",
+                      border: selectedGenres.includes(g) ? "1px solid rgba(10, 123, 140, 0.4)" : "1px solid #E0E4EA",
                     }}>
                     {g}
                   </button>
@@ -124,9 +124,9 @@ export default function ViewerIntelligence() {
                   <button key={l} onClick={() => { setSelectedLang(l); setBuiltSegment(null); }}
                     className="px-2.5 py-1 rounded-full text-[11px] font-medium transition-all"
                     style={{
-                      background: selectedLang === l ? "rgba(240, 165, 0, 0.15)" : "#1E1E35",
-                      color: selectedLang === l ? "#F0A500" : "#8888A8",
-                      border: selectedLang === l ? "1px solid rgba(240,165,0,0.3)" : "1px solid #2A2A45",
+                      background: selectedLang === l ? "rgba(240, 165, 0, 0.1)" : "#F0F2F5",
+                      color: selectedLang === l ? "#D97706" : "#64748B",
+                      border: selectedLang === l ? "1px solid rgba(240,165,0,0.4)" : "1px solid #E0E4EA",
                     }}>
                     {l}
                   </button>
@@ -208,7 +208,7 @@ export default function ViewerIntelligence() {
                       <div className="text-[10px] mt-1" style={{ color: "#64748B" }}>Estimated users</div>
                     </div>
                     <div className="text-center p-3 rounded-lg" style={{ background: "#F0F2F5" }}>
-                      <div className="text-2xl font-bold font-mono" style={{ color: "#F0A500" }}>₹{builtSegment.cpm}</div>
+                      <div className="text-2xl font-bold font-mono" style={{ color: "#F0A500" }}>${builtSegment.cpm}</div>
                       <div className="text-[10px] mt-1" style={{ color: "#64748B" }}>Avg CPM</div>
                     </div>
                     <div className="text-center p-3 rounded-lg" style={{ background: "#F0F2F5" }}>
@@ -218,7 +218,7 @@ export default function ViewerIntelligence() {
                       <div className="text-[10px] mt-1" style={{ color: "#64748B" }}>Churn risk</div>
                     </div>
                     <div className="text-center p-3 rounded-lg" style={{ background: "#F0F2F5" }}>
-                      <div className="text-2xl font-bold font-mono" style={{ color: "#16A34A" }}>₹{builtSegment.ltv.toLocaleString("en-IN")}</div>
+                      <div className="text-2xl font-bold font-mono" style={{ color: "#16A34A" }}>${builtSegment.ltv.toLocaleString("en-IN")}</div>
                       <div className="text-[10px] mt-1" style={{ color: "#64748B" }}>Avg LTV</div>
                     </div>
                   </div>
@@ -234,7 +234,7 @@ export default function ViewerIntelligence() {
                 <div className="text-sm font-medium" style={{ color: "#64748B" }}>Configure filters and click</div>
                 <div className="text-sm font-medium" style={{ color: "#94A3B8" }}>Build Segment to see results</div>
                 <div className="mt-4 text-xs" style={{ color: "#94A3B8" }}>
-                  Try: Metro India · Hindi · Smart TV · 25–34 → ₹185 CPM
+                  Try: North America · English · Smart TV · 25–44 → $28 CPM
                 </div>
               </div>
             )}
@@ -283,14 +283,14 @@ export default function ViewerIntelligence() {
               <CartesianGrid strokeDasharray="3 3" stroke="#E8ECF0" />
               <XAxis dataKey="month" tick={{ fill: "#94A3B8", fontSize: 10 }} tickLine={false} />
               <YAxis tick={{ fill: "#94A3B8", fontSize: 10 }} tickLine={false} axisLine={false}
-                tickFormatter={(v) => `₹${(v / 1000).toFixed(1)}k`} />
+                tickFormatter={(v) => `$${(v / 1000).toFixed(1)}k`} />
               <Tooltip content={<CustomTooltip />} />
               <Line type="monotone" dataKey="avgLTV" stroke="#16A34A" strokeWidth={2} dot={false} name="Avg LTV" />
             </LineChart>
           </ResponsiveContainer>
           <div className="mt-3 p-2 rounded-lg text-xs text-center"
             style={{ background: "rgba(46, 204, 113, 0.08)", color: "#16A34A" }}>
-            ↑ Diaspora UK segment LTV 2.6× platform average
+            ↑ North America segment LTV 1.8× platform average
           </div>
         </Card>
       </div>
@@ -305,9 +305,9 @@ export default function ViewerIntelligence() {
               <YAxis type="category" dataKey="stage" tick={{ fill: "#64748B", fontSize: 10 }} tickLine={false} axisLine={false} />
               <Tooltip contentStyle={{ background: "#FFFFFF", border: "1px solid #E0E4EA", borderRadius: 8 }}
                 itemStyle={{ color: "#1A1A2E" }} />
-              <Bar dataKey="metro" name="Metro" fill="#0A7B8C" radius={[0, 3, 3, 0]} />
-              <Bar dataKey="diaspora" name="Diaspora" fill="#F0A500" radius={[0, 3, 3, 0]} />
-              <Bar dataKey="t2" name="T2" fill="#16A34A" radius={[0, 3, 3, 0]} />
+              <Bar dataKey="northAm" name="N. America" fill="#0A7B8C" radius={[0, 3, 3, 0]} />
+              <Bar dataKey="europe" name="Europe" fill="#F0A500" radius={[0, 3, 3, 0]} />
+              <Bar dataKey="apac" name="APAC" fill="#16A34A" radius={[0, 3, 3, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </Card>

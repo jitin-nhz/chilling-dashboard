@@ -127,7 +127,7 @@ export default function RecommendationEngine() {
                   </div>
                   <div className="flex justify-between">
                     <span style={{ color: "#64748B" }}>LTV</span>
-                    <span style={{ color: "#1A1A2E" }}>₹{user.ltv.toLocaleString("en-IN")}</span>
+                    <span style={{ color: "#1A1A2E" }}>${user.ltv.toLocaleString("en-IN")}</span>
                   </div>
                   <div className="flex justify-between">
                     <span style={{ color: "#64748B" }}>Device</span>
@@ -293,15 +293,15 @@ export default function RecommendationEngine() {
               <YAxis tick={{ fill: "#94A3B8", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={v => `${v}%`} />
               <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="Drama" stackId="a" fill="#0A7B8C" />
+              <Bar dataKey="SciFi" stackId="a" fill="#3498DB" />
               <Bar dataKey="Thriller" stackId="a" fill="#9B59B6" />
               <Bar dataKey="Comedy" stackId="a" fill="#F0A500" />
-              <Bar dataKey="Romance" stackId="a" fill="#E91E8C" />
               <Bar dataKey="Action" stackId="a" fill="#DC2626" />
               <Bar dataKey="Other" stackId="a" fill="#CBD5E1" radius={[3, 3, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
           <div className="mt-2 text-xs text-center" style={{ color: "#64748B" }}>
-            Thriller share <span style={{ color: "#9B59B6" }}>↑ 25%</span> — Scam 2026 + Mirzapur S3 driving spike
+            Sci-Fi share <span style={{ color: "#3498DB" }}>↑ 24%</span> — Stranger Things S5 + Severance S2 driving surge
           </div>
         </Card>
 

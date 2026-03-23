@@ -53,7 +53,7 @@ export default function ContentIntelligence() {
         <StatCard label="Avg Completion Rate" value="74%" delta="+3% vs last month" deltaType="up" icon={<Film size={16} />} />
         <StatCard label="Top Content ROI" value="5.1×" delta="Scam 2026" deltaType="up" icon={<DollarSign size={16} />} accent="#F0A500" />
         <StatCard label="Content Gap — Romance" value="2.4×" delta="Demand exceeds supply" deltaType="down" icon={<AlertTriangle size={16} />} accent="#DC2626" />
-        <StatCard label="Avg Ad Rev / Title" value="₹3.2L" delta="+12% vs last quarter" deltaType="up" icon={<TrendingUp size={16} />} accent="#16A34A" />
+        <StatCard label="Avg Ad Rev / Title" value="$3.2L" delta="+12% vs last quarter" deltaType="up" icon={<TrendingUp size={16} />} accent="#16A34A" />
       </div>
 
       {/* Content Gap Analysis */}
@@ -64,7 +64,7 @@ export default function ContentIntelligence() {
           action={
             <span className="text-xs px-2 py-1 rounded-full"
               style={{ background: "rgba(231,76,60,0.1)", color: "#DC2626", border: "1px solid rgba(231,76,60,0.2)" }}>
-              Romance demand 2.4× supply
+              Sci-Fi demand 1.9× supply
             </span>
           }
         />
@@ -94,7 +94,7 @@ export default function ContentIntelligence() {
         </div>
         <div className="mt-3 p-3 rounded-lg text-xs"
           style={{ background: "rgba(231, 76, 60, 0.08)", color: "#DC2626", border: "1px solid rgba(231,76,60,0.15)" }}>
-          💡 <span style={{ color: "#1A1A2E" }}>Romance demand is 2.4× supply right now. Your next commission decision is in this chart.</span>
+          💡 <span style={{ color: "#1A1A2E" }}>Sci-Fi demand is 1.9× supply and Romance is 1.7× — your next commissioning decisions are in this chart.</span>
         </div>
       </Card>
 
@@ -139,8 +139,8 @@ export default function ContentIntelligence() {
                 <div className="flex items-center justify-between mb-1">
                   <span style={{ color: "#1A1A2E" }}>{c.title}</span>
                   <div className="flex items-center gap-3 text-[10px]">
-                    <span style={{ color: "#64748B" }}>Cost: ₹{c.cost}Cr</span>
-                    <span style={{ color: "#F0A500" }}>Rev: ₹{c.adRevenue}Cr</span>
+                    <span style={{ color: "#64748B" }}>Cost: ${c.cost}Cr</span>
+                    <span style={{ color: "#F0A500" }}>Rev: ${c.adRevenue}Cr</span>
                   </div>
                 </div>
                 <RoiBar value={c.roi} max={maxRoi} />
@@ -171,7 +171,7 @@ export default function ContentIntelligence() {
             </AreaChart>
           </ResponsiveContainer>
           <div className="mt-2 text-xs text-center" style={{ color: "#64748B" }}>
-            South Indian language share <span style={{ color: "#F0A500" }}>↑ growing</span> — Tamil+Telugu+Kannada now 38% combined
+            Korean content share <span style={{ color: "#F0A500" }}>↑ growing</span> — now 15% of sessions, up from 10% in Sep
           </div>
         </Card>
 
@@ -190,7 +190,7 @@ export default function ContentIntelligence() {
                   <span style={{ color: "#64748B" }}>{item.label}</span>
                   <div className="flex gap-3">
                     <span style={{ color: "#94A3B8" }}>{item.count} titles</span>
-                    <span className="font-mono font-bold" style={{ color: item.color }}>₹{item.cpm} CPM</span>
+                    <span className="font-mono font-bold" style={{ color: item.color }}>${item.cpm} CPM</span>
                   </div>
                 </div>
                 <div className="h-3 rounded-full overflow-hidden" style={{ background: "#F0F2F5" }}>
@@ -200,7 +200,7 @@ export default function ContentIntelligence() {
             ))}
             <div className="mt-2 p-2 rounded-lg text-xs text-center"
               style={{ background: "rgba(240,165,0,0.08)", color: "#F0A500", border: "1px solid rgba(240,165,0,0.15)" }}>
-              New releases command 2.7× catalog CPM premium
+              New releases command 2.8× catalog CPM premium
             </div>
           </div>
         </Card>
