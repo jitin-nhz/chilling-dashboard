@@ -8,6 +8,7 @@ import {
   Megaphone,
   Cpu,
   FileText,
+  AppWindow,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -19,6 +20,7 @@ const navItems = [
   { href: "/ads", icon: Megaphone, label: "Ads", sublabel: "Performance" },
   { href: "/recommend", icon: Cpu, label: "Recommendation", sublabel: "Engine" },
   { href: "/content", icon: FileText, label: "Content", sublabel: "Intelligence" },
+  { href: "/apps", icon: AppWindow, label: "Apps", sublabel: "POC Gallery" },
 ];
 
 export default function Sidebar() {
@@ -36,7 +38,7 @@ export default function Sidebar() {
     >
       <nav className="flex-1 py-4 overflow-y-auto">
         {navItems.map(({ href, icon: Icon, label, sublabel }) => {
-          const active = pathname === href;
+          const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
           return (
             <Link
               key={href}

@@ -55,6 +55,7 @@ export class ChillingDashboardAmplifyStack extends cdk.Stack {
       ].join("\n"),
       environmentVariables: [
         { name: "NODE_VERSION", value: "20" },
+        { name: "NEXT_PUBLIC_ELEVENLABS_API_KEY", value: "sk_e91d07176a93d62809bbcdbeb197245e679a4be17208350d" },
       ],
       customRules: [
         // SPA routing — serve index.html for all routes
