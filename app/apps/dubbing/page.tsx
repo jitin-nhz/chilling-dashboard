@@ -74,6 +74,7 @@ export default function DubbingPOC() {
   const [stageTimes, setStageTimes] = useState<Record<string, number>>({});
   const [latencyHistory, setLatencyHistory] = useState<LatencyEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [translatedText, setTranslatedText] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const callCount = useRef(0);
 
@@ -83,23 +84,40 @@ export default function DubbingPOC() {
     setError(null);
     setAudioUrl(null);
     setSynthTime(null);
+    setTranslatedText(null);
     setIsPlaying(false);
     setStageTimes({});
 
     const start = Date.now();
     const times: Record<string, number> = {};
 
-    // Animate ASR stage (simulated — 150–220ms)
+    // ASR stage (simulated — source language detection)
     setStage("asr");
-    await new Promise(r => setTimeout(r, 180 + Math.random() * 80));
+    await new Promise(r => setTimeout(r, 160 + Math.random() * 80));
     times.asr = Date.now() - start;
 
-    // Animate NMT stage (simulated — 200–300ms)
+    // NMT stage — real translation via MyMemory API
     setStage("nmt");
-    await new Promise(r => setTimeout(r, 220 + Math.random() * 100));
+    let textToSynth = selectedClip.script;
+    try {
+      // Skip translation if target is English
+      if (selectedLang.code !== "en") {
+        const transRes = await fetch(
+          `https://api.mymemory.translated.net/get?q=${encodeURIComponent(selectedClip.script)}&langpair=en|${selectedLang.code}`
+        );
+        const transData = await transRes.json();
+        const translated = transData?.responseData?.translatedText;
+        if (translated && transData.responseStatus === 200) {
+          textToSynth = translated;
+          setTranslatedText(translated);
+        }
+      }
+    } catch {
+      // Translation failed — fall back to English, still produce audio
+    }
     times.nmt = Date.now() - start;
 
-    // TTS stage — real ElevenLabs API call
+    // TTS stage — real ElevenLabs API call with translated text
     setStage("tts");
     try {
       const apiKey = process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY;
@@ -112,7 +130,7 @@ export default function DubbingPOC() {
             "xi-api-key": apiKey ?? "",
           },
           body: JSON.stringify({
-            text: selectedClip.script,
+            text: textToSynth,
             model_id: "eleven_multilingual_v2",
             language_code: selectedLang.code,
             voice_settings: { stability: 0.5, similarity_boost: 0.75, speed: 1.0 },
@@ -173,7 +191,12 @@ export default function DubbingPOC() {
 
   const stageInfo = [
     { key: "asr", label: "ASR", sublabel: "Speech Recognition", detail: "Source: English detected" },
-    { key: "nmt", label: "NMT", sublabel: "Neural Translation", detail: `Target: ${selectedLang.label}` },
+    {
+      key: "nmt", label: "NMT", sublabel: "MyMemory Neural Translation",
+      detail: translatedText
+        ? `"${translatedText.slice(0, 48)}…"`
+        : `en → ${selectedLang.code} (${selectedLang.label})`,
+    },
     { key: "tts", label: "TTS Synthesis", sublabel: "ElevenLabs multilingual_v2", detail: `Voice: ${VOICE_ID.slice(0, 8)}…` },
     { key: "render", label: "Audio Render", sublabel: "Output format", detail: "mp3_44100_128" },
   ];
@@ -232,7 +255,7 @@ export default function DubbingPOC() {
           <CardHeader title="Content Clip" subtitle="Select a clip to dub" />
           <div className="space-y-2 mb-4">
             {CLIPS.map(clip => (
-              <button key={clip.id} onClick={() => { setSelectedClip(clip); setAudioUrl(null); setStage("idle"); setStageTimes({}); }}
+              <button key={clip.id} onClick={() => { setSelectedClip(clip); setAudioUrl(null); setStage("idle"); setStageTimes({}); setTranslatedText(null); }}
                 className="w-full text-left p-3 rounded-lg transition-all"
                 style={{
                   background: selectedClip.id === clip.id ? "rgba(10,123,140,0.08)" : "#F0F2F5",
@@ -255,7 +278,7 @@ export default function DubbingPOC() {
             </label>
             <div className="flex flex-wrap gap-1.5">
               {LANGUAGES.map(lang => (
-                <button key={lang.code} onClick={() => { setSelectedLang(lang); setAudioUrl(null); setStage("idle"); }}
+                <button key={lang.code} onClick={() => { setSelectedLang(lang); setAudioUrl(null); setStage("idle"); setTranslatedText(null); }}
                   className="px-2 py-1 rounded-full text-[11px] font-medium transition-all"
                   style={{
                     background: selectedLang.code === lang.code ? "rgba(10,123,140,0.1)" : "#F0F2F5",
