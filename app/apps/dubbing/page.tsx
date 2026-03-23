@@ -6,16 +6,20 @@ import { Card, CardHeader } from "@/components/ui/Card";
 import { StatCard } from "@/components/ui/StatCard";
 import {
   Mic2, Globe, Play, Pause, Download, CheckCircle2,
-  Loader2, Radio, Volume2, ArrowRight, Languages,
+  Loader2, Radio, Volume2, ArrowRight, Languages, Volume, VolumeX,
 } from "lucide-react";
 
-// ── Content clips with sample scripts ─────────────────────────────────────────
+const BASE = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/";
+
+// ── Content clips ─────────────────────────────────────────────────────────────
 const CLIPS = [
   {
     id: "st5",
     title: "Stranger Things S5",
     genre: "Sci-Fi",
     duration: "0:08",
+    accentColor: "#3498DB",
+    videoUrl: `${BASE}ForBiggerJoyrides.mp4`,
     script: "The Upside Down is spreading. We don't have much time. We need to close the gate before it's too late.",
   },
   {
@@ -23,6 +27,8 @@ const CLIPS = [
     title: "Squid Game S3",
     genre: "Thriller",
     duration: "0:07",
+    accentColor: "#DC2626",
+    videoUrl: `${BASE}ForBiggerMeltdowns.mp4`,
     script: "You came back. I knew you would. The game is different this time. Are you ready to play?",
   },
   {
@@ -30,6 +36,8 @@ const CLIPS = [
     title: "Wednesday S2",
     genre: "Horror",
     duration: "0:09",
+    accentColor: "#8E44AD",
+    videoUrl: `${BASE}ForBiggerBlazes.mp4`,
     script: "I find human emotions to be an unnecessary inconvenience. Yet somehow, you've managed to surprise me.",
   },
   {
@@ -37,6 +45,8 @@ const CLIPS = [
     title: "Severance S2",
     genre: "Sci-Fi",
     duration: "0:08",
+    accentColor: "#0A7B8C",
+    videoUrl: `${BASE}ForBiggerEscapes.mp4`,
     script: "Your outie doesn't remember this conversation. But I do. That's what makes me dangerous.",
   },
 ];
@@ -55,18 +65,16 @@ const LANGUAGES = [
   { label: "Dutch", code: "nl", flag: "🇳🇱" },
 ];
 
-// All 29 supported language codes for the coverage matrix
 const ALL_SUPPORTED = ["en","es","ko","fr","de","ja","pt","hi","ar","nl","it","pl","tr","sv","da","no","fi","uk","cs","el","ro","hu","bg","ms","sk","hr","tl","ta","id"];
 
 type Stage = "idle" | "asr" | "nmt" | "tts" | "render" | "done";
-
 interface LatencyEntry { call: string; ms: number }
 
 const VOICE_ID = "JBFqnCBsd6RMkjVDRZzb";
 
 export default function DubbingPOC() {
   const [selectedClip, setSelectedClip] = useState(CLIPS[0]);
-  const [selectedLang, setSelectedLang] = useState(LANGUAGES[1]); // Spanish default
+  const [selectedLang, setSelectedLang] = useState(LANGUAGES[1]);
   const [stage, setStage] = useState<Stage>("idle");
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [synthTime, setSynthTime] = useState<number | null>(null);
@@ -75,8 +83,44 @@ export default function DubbingPOC() {
   const [latencyHistory, setLatencyHistory] = useState<LatencyEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [translatedText, setTranslatedText] = useState<string | null>(null);
+  const [isDubbed, setIsDubbed] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const callCount = useRef(0);
+
+  const resetClip = (clip: typeof CLIPS[0]) => {
+    setSelectedClip(clip);
+    setAudioUrl(null);
+    setStage("idle");
+    setStageTimes({});
+    setTranslatedText(null);
+    setIsDubbed(false);
+    setIsPlaying(false);
+    // Reset video to muted original
+    if (videoRef.current) {
+      videoRef.current.muted = true;
+    }
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = "";
+    }
+  };
+
+  const togglePlay = () => {
+    const video = videoRef.current;
+    const audio = audioRef.current;
+    if (!video) return;
+
+    if (isPlaying) {
+      video.pause();
+      audio?.pause();
+      setIsPlaying(false);
+    } else {
+      video.play();
+      if (isDubbed && audio) audio.play();
+      setIsPlaying(true);
+    }
+  };
 
   const handleDub = useCallback(async () => {
     if (stage === "asr" || stage === "nmt" || stage === "tts" || stage === "render") return;
@@ -86,21 +130,26 @@ export default function DubbingPOC() {
     setSynthTime(null);
     setTranslatedText(null);
     setIsPlaying(false);
+    setIsDubbed(false);
     setStageTimes({});
+
+    // Ensure video is playing (muted) as visual backdrop during pipeline
+    if (videoRef.current) {
+      videoRef.current.muted = true;
+      videoRef.current.play();
+    }
 
     const start = Date.now();
     const times: Record<string, number> = {};
 
-    // ASR stage (simulated — source language detection)
     setStage("asr");
     await new Promise(r => setTimeout(r, 160 + Math.random() * 80));
     times.asr = Date.now() - start;
 
-    // NMT stage — real translation via MyMemory API
+    // NMT — real translation
     setStage("nmt");
     let textToSynth = selectedClip.script;
     try {
-      // Skip translation if target is English
       if (selectedLang.code !== "en") {
         const transRes = await fetch(
           `https://api.mymemory.translated.net/get?q=${encodeURIComponent(selectedClip.script)}&langpair=en|${selectedLang.code}`
@@ -113,11 +162,11 @@ export default function DubbingPOC() {
         }
       }
     } catch {
-      // Translation failed — fall back to English, still produce audio
+      // fall back to English
     }
     times.nmt = Date.now() - start;
 
-    // TTS stage — real ElevenLabs API call with translated text
+    // TTS — real ElevenLabs call
     setStage("tts");
     try {
       const apiKey = process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY;
@@ -146,7 +195,6 @@ export default function DubbingPOC() {
       const blob = await res.blob();
       times.tts = Date.now() - start;
 
-      // Audio render stage (brief finalization)
       setStage("render");
       await new Promise(r => setTimeout(r, 80 + Math.random() * 60));
       times.render = Date.now() - start;
@@ -158,43 +206,36 @@ export default function DubbingPOC() {
       setSynthTime(totalMs);
       setStageTimes(times);
       setStage("done");
+      setIsDubbed(true);
 
-      // Update latency history
       callCount.current += 1;
-      setLatencyHistory(prev => {
-        const next = [...prev, { call: `#${callCount.current}`, ms: totalMs }];
-        return next.slice(-8);
-      });
+      setLatencyHistory(prev => [...prev, { call: `#${callCount.current}`, ms: totalMs }].slice(-8));
 
-      // Auto-play
+      // Mute video, play dubbed audio + video in sync
+      if (videoRef.current) {
+        videoRef.current.muted = true;
+        videoRef.current.currentTime = 0;
+        videoRef.current.play();
+      }
       if (audioRef.current) {
         audioRef.current.src = url;
+        audioRef.current.currentTime = 0;
         audioRef.current.play();
-        setIsPlaying(true);
       }
+      setIsPlaying(true);
     } catch (err: unknown) {
       setStage("idle");
       setError(err instanceof Error ? err.message : "Dubbing failed. Check API key.");
+      if (videoRef.current) videoRef.current.muted = true;
     }
   }, [selectedClip, selectedLang, stage]);
-
-  const togglePlay = () => {
-    if (!audioRef.current) return;
-    if (isPlaying) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-    } else {
-      audioRef.current.play();
-      setIsPlaying(true);
-    }
-  };
 
   const stageInfo = [
     { key: "asr", label: "ASR", sublabel: "Speech Recognition", detail: "Source: English detected" },
     {
       key: "nmt", label: "NMT", sublabel: "MyMemory Neural Translation",
       detail: translatedText
-        ? `"${translatedText.slice(0, 48)}…"`
+        ? `"${translatedText.slice(0, 46)}…"`
         : `en → ${selectedLang.code} (${selectedLang.label})`,
     },
     { key: "tts", label: "TTS Synthesis", sublabel: "ElevenLabs multilingual_v2", detail: `Voice: ${VOICE_ID.slice(0, 8)}…` },
@@ -205,33 +246,32 @@ export default function DubbingPOC() {
   const getStageStatus = (key: string): "idle" | "active" | "done" => {
     if (stage === "idle") return "idle";
     if (stage === "done") return "done";
-    const currentIdx = stageOrder.indexOf(stage);
-    const stageIdx = stageOrder.indexOf(key as Stage);
-    if (stageIdx < currentIdx) return "done";
-    if (stageIdx === currentIdx) return "active";
+    const ci = stageOrder.indexOf(stage);
+    const si = stageOrder.indexOf(key as Stage);
+    if (si < ci) return "done";
+    if (si === ci) return "active";
     return "idle";
   };
-
   const stageColor = (s: "idle" | "active" | "done") =>
     s === "done" ? "#16A34A" : s === "active" ? "#0A7B8C" : "#E0E4EA";
+
+  const isBusy = stage === "asr" || stage === "nmt" || stage === "tts" || stage === "render";
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Mic2 size={18} style={{ color: "#0A7B8C" }} />
-            <h1 className="text-xl font-bold" style={{ color: "#1A1A2E" }}>AI Realtime Dubbing</h1>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold"
-              style={{ background: "rgba(22,163,74,0.1)", color: "#16A34A", border: "1px solid rgba(22,163,74,0.25)" }}>
-              Live Demo
-            </span>
-          </div>
-          <p className="text-sm" style={{ color: "#64748B" }}>
-            ElevenLabs <span className="font-medium" style={{ color: "#0A7B8C" }}>eleven_multilingual_v2</span> · 29 languages · Real synthesis
-          </p>
+      <div>
+        <div className="flex items-center gap-2 mb-1">
+          <Mic2 size={18} style={{ color: "#0A7B8C" }} />
+          <h1 className="text-xl font-bold" style={{ color: "#1A1A2E" }}>AI Realtime Dubbing</h1>
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold"
+            style={{ background: "rgba(22,163,74,0.1)", color: "#16A34A", border: "1px solid rgba(22,163,74,0.25)" }}>
+            Live Demo
+          </span>
         </div>
+        <p className="text-sm" style={{ color: "#64748B" }}>
+          ElevenLabs <span className="font-medium" style={{ color: "#0A7B8C" }}>eleven_multilingual_v2</span> · 29 languages · Real synthesis
+        </p>
       </div>
 
       {/* KPIs */}
@@ -247,29 +287,135 @@ export default function DubbingPOC() {
         <StatCard label="Active Dub Streams" value="3,840" delta="+12% vs yesterday" deltaType="up" icon={<Volume2 size={16} />} accent="#16A34A" />
       </div>
 
-      {/* Main 3-col layout */}
+      {/* ── VIDEO PLAYER (full width) ─────────────────────────────────────── */}
+      <Card style={{ padding: 0, overflow: "hidden" }}>
+        <div className="relative" style={{ height: 340 }}>
+          {/* Video element */}
+          <video
+            ref={videoRef}
+            key={selectedClip.id}
+            src={selectedClip.videoUrl}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full"
+            style={{ objectFit: "cover" }}
+            onEnded={() => {
+              if (audioRef.current) audioRef.current.pause();
+              setIsPlaying(false);
+            }}
+          />
+
+          {/* Dark overlay */}
+          <div className="absolute inset-0"
+            style={{ background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.1) 50%, transparent 100%)" }} />
+
+          {/* Top-left: show info */}
+          <div className="absolute top-4 left-4 flex items-center gap-2">
+            <div className="px-2.5 py-1 rounded-lg text-xs font-semibold backdrop-blur-sm"
+              style={{ background: "rgba(0,0,0,0.55)", color: "white" }}>
+              {selectedClip.title}
+            </div>
+            <div className="px-2 py-1 rounded-full text-[10px] font-medium backdrop-blur-sm"
+              style={{ background: `${selectedClip.accentColor}CC`, color: "white" }}>
+              {selectedClip.genre}
+            </div>
+          </div>
+
+          {/* Top-right: DUBBED badge */}
+          {isDubbed && (
+            <div className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1.5 rounded-full backdrop-blur-sm pulse-dot"
+              style={{ background: "rgba(10,123,140,0.85)", color: "white", border: "1px solid rgba(255,255,255,0.2)" }}>
+              <Mic2 size={12} />
+              <span className="text-[11px] font-semibold">DUBBED · {selectedLang.flag} {selectedLang.label}</span>
+            </div>
+          )}
+
+          {/* Pipeline running indicator */}
+          {isBusy && (
+            <div className="absolute top-4 right-4 flex items-center gap-2 px-3 py-1.5 rounded-full backdrop-blur-sm"
+              style={{ background: "rgba(0,0,0,0.6)", color: "white" }}>
+              <Loader2 size={12} className="animate-spin" />
+              <span className="text-[11px]">Processing pipeline…</span>
+            </div>
+          )}
+
+          {/* Bottom controls bar */}
+          <div className="absolute bottom-0 left-0 right-0 px-4 py-3 flex items-center gap-3">
+            {/* Play/pause */}
+            <button onClick={togglePlay}
+              className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all"
+              style={{ background: "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)",
+                border: "1px solid rgba(255,255,255,0.2)", color: "white" }}>
+              {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+            </button>
+
+            {/* Track label */}
+            <div className="flex-1 min-w-0">
+              {isDubbed ? (
+                <div>
+                  <div className="text-xs font-medium text-white truncate">
+                    {selectedClip.title} — {selectedLang.flag} Dubbed track active
+                  </div>
+                  <div className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.6)" }}>
+                    Original audio muted · ElevenLabs multilingual_v2
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <div className="text-xs font-medium text-white">{selectedClip.title}</div>
+                  <div className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.6)" }}>
+                    {stage === "idle" ? "Select language and click Dub Now →" : "Dubbing pipeline running…"}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Audio indicator */}
+            <div className="flex items-center gap-1.5 text-[10px]" style={{ color: "rgba(255,255,255,0.7)" }}>
+              {isDubbed ? (
+                <><Mic2 size={12} style={{ color: "#0D9BAF" }} /><span style={{ color: "#0D9BAF" }}>Dubbed</span></>
+              ) : (
+                <><VolumeX size={12} /><span>Muted</span></>
+              )}
+            </div>
+
+            {/* Download — only when dubbed */}
+            {audioUrl && (
+              <a href={audioUrl} download={`${selectedClip.id}_${selectedLang.code}.mp3`}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-medium transition-all"
+                style={{ background: "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)",
+                  border: "1px solid rgba(255,255,255,0.2)", color: "white" }}>
+                <Download size={11} />
+                MP3
+              </a>
+            )}
+          </div>
+        </div>
+
+        {/* Clip selector tabs — below video */}
+        <div className="flex border-t" style={{ borderColor: "#E0E4EA" }}>
+          {CLIPS.map(clip => (
+            <button key={clip.id} onClick={() => resetClip(clip)}
+              className="flex-1 py-2.5 px-3 text-xs font-medium transition-all text-center"
+              style={{
+                background: selectedClip.id === clip.id ? "rgba(10,123,140,0.06)" : "transparent",
+                color: selectedClip.id === clip.id ? "#0A7B8C" : "#64748B",
+                borderBottom: selectedClip.id === clip.id ? "2px solid #0A7B8C" : "2px solid transparent",
+              }}>
+              {clip.title}
+            </button>
+          ))}
+        </div>
+      </Card>
+
+      {/* ── 3-col: Language + Pipeline + Audio controls ───────────────────── */}
       <div className="grid grid-cols-3 gap-4">
 
-        {/* Left — Content + Language Selector */}
+        {/* Left — Language + Dub button */}
         <Card>
-          <CardHeader title="Content Clip" subtitle="Select a clip to dub" />
-          <div className="space-y-2 mb-4">
-            {CLIPS.map(clip => (
-              <button key={clip.id} onClick={() => { setSelectedClip(clip); setAudioUrl(null); setStage("idle"); setStageTimes({}); setTranslatedText(null); }}
-                className="w-full text-left p-3 rounded-lg transition-all"
-                style={{
-                  background: selectedClip.id === clip.id ? "rgba(10,123,140,0.08)" : "#F0F2F5",
-                  border: selectedClip.id === clip.id ? "1px solid rgba(10,123,140,0.3)" : "1px solid #E0E4EA",
-                }}>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[11px] font-semibold" style={{ color: "#1A1A2E" }}>{clip.title}</span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded"
-                    style={{ background: "rgba(10,123,140,0.1)", color: "#0A7B8C" }}>{clip.genre}</span>
-                </div>
-                <p className="text-[10px] leading-relaxed" style={{ color: "#64748B" }}>&ldquo;{clip.script.slice(0, 60)}…&rdquo;</p>
-              </button>
-            ))}
-          </div>
+          <CardHeader title="Dub Settings" subtitle="Select target language and synthesise" />
 
           <div className="mb-4">
             <label className="text-xs font-medium mb-2 block" style={{ color: "#64748B" }}>
@@ -278,7 +424,8 @@ export default function DubbingPOC() {
             </label>
             <div className="flex flex-wrap gap-1.5">
               {LANGUAGES.map(lang => (
-                <button key={lang.code} onClick={() => { setSelectedLang(lang); setAudioUrl(null); setStage("idle"); setTranslatedText(null); }}
+                <button key={lang.code}
+                  onClick={() => { setSelectedLang(lang); setAudioUrl(null); setStage("idle"); setTranslatedText(null); setIsDubbed(false); }}
                   className="px-2 py-1 rounded-full text-[11px] font-medium transition-all"
                   style={{
                     background: selectedLang.code === lang.code ? "rgba(10,123,140,0.1)" : "#F0F2F5",
@@ -291,15 +438,32 @@ export default function DubbingPOC() {
             </div>
           </div>
 
-          <button onClick={handleDub}
-            disabled={stage === "asr" || stage === "nmt" || stage === "tts" || stage === "render"}
+          {/* Script preview */}
+          <div className="mb-4 p-3 rounded-lg" style={{ background: "#F0F2F5", border: "1px solid #E0E4EA" }}>
+            <div className="text-[10px] font-medium mb-1" style={{ color: "#64748B" }}>Original script</div>
+            <p className="text-[11px] leading-relaxed italic" style={{ color: "#1A1A2E" }}>
+              &ldquo;{selectedClip.script}&rdquo;
+            </p>
+            {translatedText && (
+              <>
+                <div className="w-full h-px my-2" style={{ background: "#E0E4EA" }} />
+                <div className="text-[10px] font-medium mb-1" style={{ color: "#0A7B8C" }}>
+                  {selectedLang.flag} Translated ({selectedLang.label})
+                </div>
+                <p className="text-[11px] leading-relaxed italic" style={{ color: "#0A7B8C" }}>
+                  &ldquo;{translatedText}&rdquo;
+                </p>
+              </>
+            )}
+          </div>
+
+          <button onClick={handleDub} disabled={isBusy}
             className="w-full py-2.5 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-all"
             style={{
-              background: (stage === "asr" || stage === "nmt" || stage === "tts" || stage === "render")
-                ? "#F0F2F5" : "linear-gradient(135deg, #0A7B8C, #0D9BAF)",
-              color: (stage === "asr" || stage === "nmt" || stage === "tts" || stage === "render") ? "#94A3B8" : "white",
+              background: isBusy ? "#F0F2F5" : "linear-gradient(135deg, #0A7B8C, #0D9BAF)",
+              color: isBusy ? "#94A3B8" : "white",
             }}>
-            {(stage === "asr" || stage === "nmt" || stage === "tts" || stage === "render") ? (
+            {isBusy ? (
               <><Loader2 size={14} className="animate-spin" /> Synthesising…</>
             ) : (
               <>Dub Now <ArrowRight size={14} /></>
@@ -327,16 +491,11 @@ export default function DubbingPOC() {
                   <div className="flex items-center gap-3 p-3 rounded-lg"
                     style={{ background: status === "active" ? "rgba(10,123,140,0.06)" : "#F0F2F5",
                       border: `1px solid ${status === "active" ? "rgba(10,123,140,0.2)" : "#E0E4EA"}` }}>
-                    {/* Status dot */}
                     <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
                       style={{ background: `${color}20`, border: `1.5px solid ${color}` }}>
-                      {status === "done" ? (
-                        <CheckCircle2 size={12} style={{ color }} />
-                      ) : status === "active" ? (
-                        <Loader2 size={12} style={{ color }} className="animate-spin" />
-                      ) : (
-                        <div className="w-2 h-2 rounded-full" style={{ background: color }} />
-                      )}
+                      {status === "done" ? <CheckCircle2 size={12} style={{ color }} />
+                        : status === "active" ? <Loader2 size={12} style={{ color }} className="animate-spin" />
+                        : <div className="w-2 h-2 rounded-full" style={{ background: color }} />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
@@ -349,7 +508,7 @@ export default function DubbingPOC() {
                         )}
                       </div>
                       <div className="text-[10px]" style={{ color: "#64748B" }}>{s.sublabel}</div>
-                      <div className="text-[10px] mt-0.5" style={{ color: "#94A3B8" }}>{s.detail}</div>
+                      <div className="text-[10px] mt-0.5 truncate" style={{ color: "#94A3B8" }}>{s.detail}</div>
                     </div>
                   </div>
                   {i < stageInfo.length - 1 && (
@@ -361,7 +520,6 @@ export default function DubbingPOC() {
               );
             })}
           </div>
-
           {stage === "done" && synthTime && (
             <div className="mt-4 p-3 rounded-lg text-center"
               style={{ background: "rgba(10,123,140,0.06)", border: "1px solid rgba(10,123,140,0.15)" }}>
@@ -371,109 +529,79 @@ export default function DubbingPOC() {
           )}
         </Card>
 
-        {/* Right — Audio Output */}
+        {/* Right — Audio track info + Voice config */}
         <Card>
-          <CardHeader title="Audio Output" subtitle={`${selectedLang.flag} ${selectedLang.label} dub — George voice`} />
+          <CardHeader title="Dubbed Track" subtitle={`${selectedLang.flag} ${selectedLang.label} — George voice`} />
 
-          <div className="flex flex-col items-center justify-center py-6 gap-4">
-            {/* Status */}
-            <div className="text-center">
-              {stage === "idle" && <p className="text-sm" style={{ color: "#94A3B8" }}>Select a clip and hit Dub Now</p>}
-              {(stage === "asr" || stage === "nmt") && (
-                <div className="flex items-center gap-2 text-sm" style={{ color: "#64748B" }}>
-                  <Loader2 size={14} className="animate-spin" /> Preparing pipeline…
+          <div className="flex flex-col gap-4">
+            {/* Track status */}
+            <div className="p-3 rounded-lg flex items-center gap-3"
+              style={{ background: isDubbed ? "rgba(10,123,140,0.06)" : "#F0F2F5",
+                border: `1px solid ${isDubbed ? "rgba(10,123,140,0.2)" : "#E0E4EA"}` }}>
+              <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                style={{ background: isDubbed ? "linear-gradient(135deg,#0A7B8C,#0D9BAF)" : "#E0E4EA" }}>
+                {isDubbed ? <Volume size={18} style={{ color: "white" }} /> : <VolumeX size={18} style={{ color: "#94A3B8" }} />}
+              </div>
+              <div>
+                <div className="text-xs font-semibold" style={{ color: isDubbed ? "#0A7B8C" : "#94A3B8" }}>
+                  {isDubbed ? "Dubbed audio track ready" : "No dubbed track yet"}
                 </div>
-              )}
-              {stage === "tts" && (
-                <div className="flex items-center gap-2 text-sm" style={{ color: "#0A7B8C" }}>
-                  <Loader2 size={14} className="animate-spin" /> Synthesising with ElevenLabs…
+                <div className="text-[10px] mt-0.5" style={{ color: "#64748B" }}>
+                  {isDubbed ? `Plays over video · ${(synthTime! / 1000).toFixed(2)}s synthesis` : "Hit Dub Now to generate"}
                 </div>
-              )}
-              {stage === "render" && (
-                <div className="flex items-center gap-2 text-sm" style={{ color: "#16A34A" }}>
-                  <Loader2 size={14} className="animate-spin" /> Finalising audio…
-                </div>
-              )}
+              </div>
             </div>
 
-            {/* Player */}
-            {audioUrl && (
-              <div className="w-full space-y-3">
-                <div className="flex items-center justify-center gap-3">
-                  <button onClick={togglePlay}
-                    className="w-12 h-12 rounded-full flex items-center justify-center transition-all"
-                    style={{ background: "linear-gradient(135deg, #0A7B8C, #0D9BAF)", color: "white",
-                      boxShadow: "0 4px 16px rgba(10,123,140,0.3)" }}>
-                    {isPlaying ? <Pause size={20} /> : <Play size={20} />}
-                  </button>
-                </div>
-
-                {/* Waveform bars (decorative) */}
-                <div className="flex items-center justify-center gap-0.5 h-10">
-                  {Array.from({ length: 32 }, (_, i) => (
-                    <div key={i} className="rounded-full transition-all"
-                      style={{
-                        width: 3,
-                        height: isPlaying ? `${20 + Math.sin(i * 0.8) * 14 + Math.random() * 8}px` : `${8 + Math.sin(i * 0.6) * 6}px`,
-                        background: isPlaying ? "#0A7B8C" : "#CBD5E1",
-                        transition: isPlaying ? "height 0.15s ease" : "height 0.3s ease",
-                      }} />
-                  ))}
-                </div>
-
-                <div className="text-center text-[11px] space-y-1">
-                  <div style={{ color: "#64748B" }}>
-                    <span className="font-medium" style={{ color: "#1A1A2E" }}>{selectedClip.title}</span>
-                    {" · "}{selectedLang.flag} {selectedLang.label}
-                  </div>
-                  {synthTime && (
-                    <div style={{ color: "#0A7B8C" }}>
-                      Synthesised in <span className="font-mono font-bold">{(synthTime / 1000).toFixed(2)}s</span>
-                    </div>
-                  )}
-                </div>
-
-                <a href={audioUrl} download={`${selectedClip.id}_${selectedLang.code}.mp3`}
-                  className="flex items-center justify-center gap-1.5 w-full py-2 rounded-lg text-xs font-medium"
-                  style={{ background: "#F0F2F5", color: "#64748B", border: "1px solid #E0E4EA" }}>
-                  <Download size={12} />
-                  Download MP3
-                </a>
+            {/* Waveform when playing */}
+            {isDubbed && (
+              <div className="flex items-center justify-center gap-0.5 h-10 px-2">
+                {Array.from({ length: 32 }, (_, i) => (
+                  <div key={i} className="rounded-full"
+                    style={{
+                      width: 3,
+                      height: isPlaying ? `${18 + Math.sin(i * 0.8) * 12}px` : `${6 + Math.sin(i * 0.6) * 5}px`,
+                      background: isPlaying ? "#0A7B8C" : "#CBD5E1",
+                      transition: "height 0.2s ease",
+                    }} />
+                ))}
               </div>
             )}
 
-            <audio ref={audioRef} onEnded={() => setIsPlaying(false)} className="hidden" />
-          </div>
+            {/* Download */}
+            {audioUrl && (
+              <a href={audioUrl} download={`${selectedClip.id}_${selectedLang.code}.mp3`}
+                className="flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium"
+                style={{ background: "#F0F2F5", color: "#64748B", border: "1px solid #E0E4EA" }}>
+                <Download size={12} />
+                Download dubbed MP3
+              </a>
+            )}
 
-          {/* Voice info */}
-          <div className="p-3 rounded-lg" style={{ background: "#F0F2F5", border: "1px solid #E0E4EA" }}>
-            <div className="text-[10px] font-medium mb-1" style={{ color: "#64748B" }}>Voice Configuration</div>
-            <div className="space-y-0.5 text-[10px]">
-              <div className="flex justify-between">
-                <span style={{ color: "#94A3B8" }}>Voice ID</span>
-                <span className="font-mono" style={{ color: "#1A1A2E" }}>{VOICE_ID.slice(0, 12)}…</span>
-              </div>
-              <div className="flex justify-between">
-                <span style={{ color: "#94A3B8" }}>Model</span>
-                <span style={{ color: "#0A7B8C" }}>eleven_multilingual_v2</span>
-              </div>
-              <div className="flex justify-between">
-                <span style={{ color: "#94A3B8" }}>Stability</span>
-                <span style={{ color: "#1A1A2E" }}>0.50</span>
-              </div>
-              <div className="flex justify-between">
-                <span style={{ color: "#94A3B8" }}>Latency mode</span>
-                <span style={{ color: "#16A34A" }}>Optimised (3)</span>
+            <audio ref={audioRef} onEnded={() => { setIsPlaying(false); }} className="hidden" />
+
+            {/* Voice config */}
+            <div className="p-3 rounded-lg" style={{ background: "#F0F2F5", border: "1px solid #E0E4EA" }}>
+              <div className="text-[10px] font-medium mb-1.5" style={{ color: "#64748B" }}>Voice Configuration</div>
+              <div className="space-y-1 text-[10px]">
+                {[
+                  ["Voice ID", `${VOICE_ID.slice(0, 12)}…`],
+                  ["Model", "eleven_multilingual_v2"],
+                  ["Stability", "0.50"],
+                  ["Latency mode", "Optimised (3)"],
+                ].map(([k, v]) => (
+                  <div key={k} className="flex justify-between">
+                    <span style={{ color: "#94A3B8" }}>{k}</span>
+                    <span className="font-mono" style={{ color: k === "Model" ? "#0A7B8C" : k === "Latency mode" ? "#16A34A" : "#1A1A2E" }}>{v}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         </Card>
       </div>
 
-      {/* Bottom row */}
+      {/* ── Bottom row ────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-4">
-
-        {/* Language Coverage Matrix */}
         <Card>
           <CardHeader title="Language Coverage" subtitle="Supported dubbing pairs (source: English)" />
           <div className="flex flex-wrap gap-1.5">
@@ -481,8 +609,7 @@ export default function DubbingPOC() {
               const lang = LANGUAGES.find(l => l.code === code);
               const isSelected = code === selectedLang.code;
               return (
-                <div key={code}
-                  className="px-2 py-1 rounded text-[10px] font-mono font-medium"
+                <div key={code} className="px-2 py-1 rounded text-[10px] font-mono font-medium"
                   style={{
                     background: isSelected ? "rgba(10,123,140,0.12)" : "rgba(22,163,74,0.06)",
                     color: isSelected ? "#0A7B8C" : "#16A34A",
@@ -505,7 +632,6 @@ export default function DubbingPOC() {
           </div>
         </Card>
 
-        {/* Latency History */}
         <Card>
           <CardHeader title="Synthesis Latency History" subtitle="Last 8 API calls (ms)" />
           {latencyHistory.length === 0 ? (
@@ -520,10 +646,8 @@ export default function DubbingPOC() {
                 <XAxis dataKey="call" tick={{ fill: "#94A3B8", fontSize: 10 }} tickLine={false} />
                 <YAxis tick={{ fill: "#94A3B8", fontSize: 10 }} tickLine={false} axisLine={false}
                   tickFormatter={v => `${v}ms`} />
-                <Tooltip
-                  contentStyle={{ background: "#FFFFFF", border: "1px solid #E0E4EA", borderRadius: 8 }}
-                  itemStyle={{ color: "#0A7B8C" }}
-                  labelStyle={{ color: "#64748B" }}
+                <Tooltip contentStyle={{ background: "#FFFFFF", border: "1px solid #E0E4EA", borderRadius: 8 }}
+                  itemStyle={{ color: "#0A7B8C" }} labelStyle={{ color: "#64748B" }}
                   formatter={(v) => [`${v}ms`, "Synthesis time"]} />
                 <Line type="monotone" dataKey="ms" stroke="#0A7B8C" strokeWidth={2}
                   dot={{ fill: "#0A7B8C", r: 4 }} activeDot={{ r: 6 }} />
