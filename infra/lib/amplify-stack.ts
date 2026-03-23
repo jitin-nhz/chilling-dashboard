@@ -33,7 +33,7 @@ export class ChillingDashboardAmplifyStack extends cdk.Stack {
       name: "chilling-dashboard",
       repository: `https://github.com/${props.githubOwner}/${props.githubRepo}`,
       oauthToken: githubToken.secretValue.unsafeUnwrap(),
-      platform: "WEB",
+      platform: "WEB_COMPUTE",
       buildSpec: [
         "version: 1",
         "frontend:",
@@ -45,7 +45,7 @@ export class ChillingDashboardAmplifyStack extends cdk.Stack {
         "      commands:",
         "        - npm run build",
         "  artifacts:",
-        "    baseDirectory: out",
+        "    baseDirectory: .next",
         "    files:",
         "      - '**/*'",
         "  cache:",
@@ -55,15 +55,7 @@ export class ChillingDashboardAmplifyStack extends cdk.Stack {
       ].join("\n"),
       environmentVariables: [
         { name: "NODE_VERSION", value: "20" },
-        { name: "NEXT_PUBLIC_ELEVENLABS_API_KEY", value: "sk_e91d07176a93d62809bbcdbeb197245e679a4be17208350d" },
-      ],
-      customRules: [
-        // SPA routing — serve index.html for all routes
-        {
-          source: "/<*>",
-          target: "/index.html",
-          status: "404-200",
-        },
+        { name: "ELEVENLABS_API_KEY", value: "sk_e91d07176a93d62809bbcdbeb197245e679a4be17208350d" },
       ],
       enableBranchAutoDeletion: false,
     });
