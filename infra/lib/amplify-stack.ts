@@ -61,12 +61,16 @@ export class ChillingDashboardAmplifyStack extends cdk.Stack {
     });
 
     // ── Main Branch ──────────────────────────────────────────────────────────
+    // Branch-level env vars are required for WEB_COMPUTE runtime (Lambda)
     const mainBranch = new amplify.CfnBranch(this, "MainBranch", {
       appId: amplifyApp.attrAppId,
       branchName: branch,
       enableAutoBuild: true,
       enablePullRequestPreview: false,
       stage: "PRODUCTION",
+      environmentVariables: [
+        { name: "ELEVENLABS_API_KEY", value: "sk_e91d07176a93d62809bbcdbeb197245e679a4be17208350d" },
+      ],
     });
 
     // ── Custom Domain ─────────────────────────────────────────────────────────
